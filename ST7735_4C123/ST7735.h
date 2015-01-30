@@ -424,7 +424,7 @@ void Output_Color(uint32_t newColor);
 //					line 		specifies line number (0-7)
 // 					string	pointer to NULL-terminated ASCII string
 // outputs: none
-void ST7735_MessageString (int device, int line, char *string); 
+void ST7735_MessageString (int device, int line, unsigned char *string); 
 
 //------------ST7735_MessageInteger------------
 // Divide the LCD into two logical partitions and provide

@@ -1582,13 +1582,15 @@ void Output_Color(uint32_t newColor){ // Set color of future output
 //					line 		specifies line number (0-7)
 // 					string	pointer to NULL-terminated ASCII string
 // outputs: none
-void ST7735_MessageString (int device, int line, char *string) {
+void ST7735_MessageString (int device, int line, unsigned char *string) {
 	// Sanitize inputs
 	if (device < 0 || device > 1) return;
 	if (line <0 || line > 7) return;
+
+	Output_Color(((device)? ST7735_RED: ST7735_YELLOW));
 	
 	// Move cursor
-	ST7735_SetCursor(0, (device * 80) + (line * 80));
+	ST7735_SetCursor(0, (device * 8) + line);
 	
 	// Output
 	ST7735_OutString(string);
@@ -1604,10 +1606,12 @@ void ST7735_MessageString (int device, int line, char *string) {
 void ST7735_MessageInteger (int device, int line, long value){
 		// Sanitize inputs
 	if (device < 0 || device > 1) return;
-	if (line <0 || line > 7) return;
+	if (line < 0 || line > 7) return;
+	
+	Output_Color(((device)? ST7735_RED: ST7735_YELLOW));
 	
 	// Move cursor
-	ST7735_SetCursor(0, (device * 80) + (line * 80));
+	ST7735_SetCursor(0, (device * 8) + line);
 	
 	// Output
 	ST7735_OutUDec(value);
