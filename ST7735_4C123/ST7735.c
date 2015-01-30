@@ -1,4 +1,8 @@
 /***************************************************
+Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
+****************************************************/
+
+/***************************************************
   This is a library for the Adafruit 1.8" SPI display.
   This library works with the Adafruit 1.8" TFT Breakout w/SD card
   ----> http://www.adafruit.com/products/358
@@ -1569,4 +1573,42 @@ void Output_On(void){ // Turns on the display
 // Output: none
 void Output_Color(uint32_t newColor){ // Set color of future output 
   ST7735_SetTextColor(newColor);
+}
+
+//------------ST7735_MessageString------------
+// Divide the LCD into two logical partitions and provide
+// an interface to output a string
+// inputs: 	device	specifies top(0) or bottom(1)
+//					line 		specifies line number (0-7)
+// 					string	pointer to NULL-terminated ASCII string
+// outputs: none
+void ST7735_MessageString (int device, int line, char *string) {
+	// Sanitize inputs
+	if (device < 0 || device > 1) return;
+	if (line <0 || line > 7) return;
+	
+	// Move cursor
+	ST7735_SetCursor(0, (device * 80) + (line * 80));
+	
+	// Output
+	ST7735_OutString(string);
+}	
+
+//------------ST7735_MessageInteger------------
+// Divide the LCD into two logical partitions and provide
+// an interface to output a string
+// inputs: 	device	specifies top(0) or bottom(1)
+//					line 		specifies line number (0-7)
+// 					value		32-bit number in unsigned decimal format
+// outputs: none
+void ST7735_MessageInteger (int device, int line, long value){
+		// Sanitize inputs
+	if (device < 0 || device > 1) return;
+	if (line <0 || line > 7) return;
+	
+	// Move cursor
+	ST7735_SetCursor(0, (device * 80) + (line * 80));
+	
+	// Output
+	ST7735_OutUDec(value);
 }
