@@ -410,6 +410,8 @@ void ADC0Seq3_Handler(void){
 void ADC0_Open(uint8_t channelNum) {
 	// Open the specified channel with SW triggering
 	ADC0_InitSWTriggerSeq3(channelNum);
+	
+	ChannelNumber = channelNum;
 }
 
 //------------ADC0_In------------

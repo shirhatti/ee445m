@@ -42,12 +42,14 @@ void WaitForInterrupt(void);  // low power mode
 // result to a global variable that can be accessed with the JTAG
 // debugger and viewed with the variable watch feature.
 
+int16_t data = 0;
 
 int main(void){
   PLL_Init();                              // 50 MHz system clock
   SYSCTL_RCGCGPIO_R |= 0x00000020;         // activate port F
-  ADC0_InitTimer0ATriggerSeq3(0, 5000000); // ADC channel 0, 10 Hz sampling
-  GPIO_PORTF_DIR_R |= 0x04;                // make PF2 out (built-in LED)
+//  ADC0_InitTimer0ATriggerSeq3(0, 8000000); // ADC channel 0, 10 Hz sampling
+  ADC0_Open(0);
+	GPIO_PORTF_DIR_R |= 0x04;                // make PF2 out (built-in LED)
   GPIO_PORTF_AFSEL_R &= ~0x04;             // disable alt funct on PF2
   GPIO_PORTF_DEN_R |= 0x04;                // enable digital I/O on PF2
                                            // configure PF2 as GPIO
@@ -55,7 +57,8 @@ int main(void){
   GPIO_PORTF_AMSEL_R = 0;                  // disable analog functionality on PF
   GPIO_PORTF_DATA_R &= ~0x04;              // turn off LED
   while(1){
-    WaitForInterrupt();
+//    WaitForInterrupt();
     GPIO_PORTF_DATA_R ^= 0x04;             // toggle LED
+		data = ADC_In();
   }
 }
