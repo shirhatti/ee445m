@@ -27,6 +27,8 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
  */
 #include <stdint.h>
 #include "inc/tm4c123gh6pm.h"
+#include "ADCT0ATrigger.h"
+
 #define NVIC_EN0_INT17          0x00020000  // Interrupt 17 enable
 
 #define TIMER_CFG_16_BIT        0x00000004  // 16-bit timer configuration,
@@ -270,7 +272,7 @@ void ADC0_InitTimer0ATriggerSeq3PD3(uint32_t period){
   EnableInterrupts();           // 13) enable interrupts
 }
 
-void ADC0_InitSWTriggerSeq3(uint32_t channelNum){ 
+void ADC0_InitSWTriggerSeq3(uint8_t channelNum){ 
 	volatile uint32_t delay;
   switch(channelNum){             // 1) activate clock
     case 0:
@@ -366,10 +368,10 @@ void ADC0_InitSWTriggerSeq3(uint32_t channelNum){
       GPIO_PORTB_AMSEL_R |= 0x20; // 6.11) enable analog functionality on PB5
       break;
   }
-	//SYSCTL_RCGC0_R |= 0x00010000;   // 7) activate ADC0 (legacy code)
+//  SYSCTL_RCGC0_R |= 0x00010000;   // 7) activate ADC0 (legacy code)
   SYSCTL_RCGCADC_R |= 0x00000001; // 7) activate ADC0 (actually doesn't work)
-  delay = SYSCTL_RCGC0_R;         // 8) allow time for clock to stabilize
-  delay = SYSCTL_RCGC0_R;
+  delay = SYSCTL_RCGCGPIO_R;         // 8) allow time for clock to stabilize
+  delay = SYSCTL_RCGCGPIO_R;
 //  SYSCTL_RCGC0_R &= ~0x00000300;  // 9) configure for 125K (legacy code)
   ADC0_PC_R &= ~0xF;              // 9) clear max sample rate field
   ADC0_PC_R |= 0x1;               //    configure for 125K samples/sec
@@ -386,17 +388,26 @@ void ADC0_InitSWTriggerSeq3(uint32_t channelNum){
 volatile uint32_t ADCvalue;
 void ADC0Seq3_Handler(void){
 	static uint16_t sampleNum = 0;
+	
   ADC0_ISC_R = 0x08;          // acknowledge ADC sequence 3 completion
   ADCvalue = ADC0_SSFIFO3_R;  // 12-bit result
 	BufferName[sampleNum] = ADCvalue;
 	sampleNum++;
-	// On completion disable timer
+	
+	// On completion disable timer, reenable software trigger
 	if (sampleNum == NumberSamples) {
 		// DisableInterrupts();
-		TIMER0_CTL_R = 0x00000000;    // disable timer0A during setup
+		TIMER0_CTL_R = 0x00000000;    // disable timer0A
 		// EnableInterrupts();
 		TimerChannelNumber = -1;
-		NumberSamples = 0;
+		sampleNum = 0;
+		
+		ADC0_ACTSS_R &= ~0x0008;        // 11) disable sample sequencer 3
+		ADC0_EMUX_R &= ~0xF000;         // 12) seq3 is software trigger
+		ADC0_SSMUX3_R &= ~0x000F;       // 13) clear SS3 field
+		ADC0_SSCTL3_R = 0x0006;         // 14) no TS0 D0, yes IE0 END0
+		ADC0_IM_R &= ~0x0008;           // 15) disable SS3 interrupts
+		ADC0_ACTSS_R |= 0x0008;         // 16) enable sample sequencer 3
 	}
 }
 
@@ -420,14 +431,15 @@ void ADC0_Open(uint8_t channelNum) {
 // outputs:	-1		Channel hasn't been opened
 //					-2		Channel in use by timer
 int16_t ADC_In(void) {
+	// Read a sample on the open channel using SW triggering
+	int16_t result;
+	
 	// If channel hasn't been opened return error
 	if (ChannelNumber == -1) return -1;
 	
 	// Ensure channel is not being used by timer
 	if (ChannelNumber == TimerChannelNumber) return -2;
 	
-	// Read a sample on the open channel using SW triggering
-	uint32_t result;
   ADC0_PSSI_R = 0x0008;            // 1) initiate SS3
   while((ADC0_RIS_R&0x08)==0){};   // 2) wait for conversion done
   // if you have an A0-A3 revision number, you need to add an 8 usec wait here
@@ -449,15 +461,16 @@ int16_t ADC_Collect(uint8_t channelNum,  uint32_t Fs, uint16_t buffer[], uint16_
 	// check if timer not in use
 	if (channelNum == TimerChannelNumber)
 		return 0;
-	// If channelNum is open, close it
-	if (channelNum == ChannelNumber) ChannelNumber = -1;
+	// If channelNum is closed, open it
+	if (ChannelNumber == -1) ChannelNumber = channelNum;
 	
 	// save buffer name
 	BufferName = buffer;
 	NumberSamples = numberOfSamples;
+	TimerChannelNumber = channelNum;
 	
 	// Switch to timer triggering
-	ADC0_InitTimer0ATriggerSeq3(channelNum, (80000000/Fs));
+	ADC0_InitTimer0ATriggerSeq3(channelNum, (50000000/Fs));
 	
 	return 0;
 }

@@ -46,6 +46,19 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 // channelNum must be 0-11 (inclusive) corresponding to Ain0 through Ain11
 void ADC0_InitTimer0ATriggerSeq3(uint8_t channelNum, uint32_t period);
 
+// This initialization function sets up the ADC according to the
+// following parameters.  Any parameters not explicitly listed
+// below are not modified:
+// Max sample rate: <=125,000 samples/second
+// Sequencer 0 priority: 1st (highest)
+// Sequencer 1 priority: 2nd
+// Sequencer 2 priority: 3rd
+// Sequencer 3 priority: 4th (lowest)
+// SS3 triggering event: software trigger
+// SS3 1st sample source: programmable using variable 'channelNum' [0:7]
+// SS3 interrupts: enabled but not promoted to controller
+void ADC0_InitSWTriggerSeq3(uint8_t channelNum);
+
 // User-added functions
 
 //------------ADC0_Open------------
