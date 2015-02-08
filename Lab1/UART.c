@@ -314,3 +314,12 @@ char character;
   }
   *bufPt = 0;
 }
+
+//---------------------OutCRLF---------------------
+// Output a CR,LF to UART to go to a new line
+// Input: none
+// Output: none
+void OutCRLF(void){
+  UART_OutChar(CR);
+  UART_OutChar(LF);
+}

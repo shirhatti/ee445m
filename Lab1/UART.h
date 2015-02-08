@@ -108,3 +108,9 @@ void UART_OutUHex(uint32_t number);
 // Output: Null terminated string
 // -- Modified by Agustinus Darmawan + Mingjie Qiu --
 void UART_InString(char *bufPt, uint16_t max);
+
+//---------------------OutCRLF---------------------
+// Output a CR,LF to UART to go to a new line
+// Input: none
+// Output: none
+void OutCRLF(void);

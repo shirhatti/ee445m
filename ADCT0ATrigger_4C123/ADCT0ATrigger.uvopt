@@ -194,10 +194,10 @@
       <FileType>2</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>76</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>635</TopLine>
-      <CurrentLine>637</CurrentLine>
+      <TopLine>268</TopLine>
+      <CurrentLine>281</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\startup.s</PathWithFileName>
       <FilenameWithoutPath>startup.s</FilenameWithoutPath>
@@ -210,10 +210,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>13</ColumnNumber>
+      <ColumnNumber>63</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>1</TopLine>
-      <CurrentLine>261</CurrentLine>
+      <TopLine>430</TopLine>
+      <CurrentLine>17</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\ADCT0ATrigger.c</PathWithFileName>
       <FilenameWithoutPath>ADCT0ATrigger.c</FilenameWithoutPath>
@@ -226,10 +226,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>20</ColumnNumber>
+      <ColumnNumber>4</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>28</TopLine>
-      <CurrentLine>47</CurrentLine>
+      <TopLine>22</TopLine>
+      <CurrentLine>64</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\ADCTestmain.c</PathWithFileName>
       <FilenameWithoutPath>ADCTestmain.c</FilenameWithoutPath>

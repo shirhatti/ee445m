@@ -36,7 +36,9 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 #include "cmdline.h"
+#include "UART.h"
 
 //*****************************************************************************
 //
@@ -195,3 +197,60 @@ CmdLineProcess(char *pcCmdLine)
 //! @}
 //
 //*****************************************************************************
+
+// Used for UART commands
+char HelpADC[] = "Send commands to the ADC";
+char HelpLCD[] = "Send commands to the LCD";
+char HelpOS[] = "Send commands to the OS";
+
+/*******************CommandADC********************
+ Send debugging commands to the ADC
+   Input: ui8Argc is the number of commands parsed
+          g_ppcArgv is an array containing the commands
+ Outputs: error (-1); success (channel #)
+*************************************************/ 
+//void CommandADC(uint_fast8_t ui8Argc, static char *g_ppcArgv[]) {
+//  int channel = atoi(g_ppcArgv[2]);
+//  
+//  if((channel < 0) || (channel > 11)) { return -1; }
+//  if(strcmp("open",g_ppcArgv[1]) == 0) {
+//    ADC_Open(channel);
+//  } 
+//  else if(strcmp("collect",g_ppcArgv[1]) == 0) {
+//    ADC_Collect(channel, Fs, buffer, numSamples)
+//  }
+//  else if(strcmp("read",g_ppcArgv[1]) == 0) {
+//    ADC0_In(channel)
+//    UART_OutUDec
+//  } 
+//  "open"
+//  "collect"
+//  "read"
+//}
+
+/*******************CommandLCD********************
+ Send debugging commands to the LCD
+   Input: ui8Argc is the number of commands parsed
+          g_ppcArgv is an array containing the commands
+ Outputs: error (-1); success (0)
+*************************************************/ 
+void CommandLCD(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
+	OutCRLF(); UART_OutString("Hello world");
+}
+
+///*******************CommandOS*********************
+// Send debugging commands to the OS
+//   Input: ui8Argc is the number of commands parsed
+//          g_ppcArgv is an array containing the commands
+// Outputs: error (-1); success (0)
+//*************************************************/ 
+//void CommandOS(uint_fast8_t ui8Argc, static char *g_ppcArgv[]) {
+//  "execute"
+//}
+
+// Command Table as defined by Tivaware
+tCmdLineEntry g_psCmdTable[] = {
+//    { "adc", CommandADC, HelpADC },
+    { "lcd", CommandLCD, HelpLCD },
+//    { "os", CommandOS, HelpOS }
+};
