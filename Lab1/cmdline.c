@@ -34,11 +34,13 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 //*****************************************************************************
 
 #include <stdint.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include "cmdline.h"
 #include "UART.h"
+#include "ST7735.h"
 
 //*****************************************************************************
 //
@@ -235,7 +237,39 @@ char HelpOS[] = "Send commands to the OS";
  Outputs: error (-1); success (0)
 *************************************************/ 
 void CommandLCD(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
-	OutCRLF(); UART_OutString("Hello world");
+	int16_t screen = 0, line = 0;
+	if (ui8Argc <= 3) {
+		OutCRLF();
+		UART_OutString("Insufficient arguments for command lcd");
+		return;
+	}
+	
+	//Check for valid screen number
+	if (strcmp(g_ppcArgv[1],"0")==0 || (strcmp(g_ppcArgv[1],"1")==0)) {
+		screen = atoi(g_ppcArgv[1]);
+	} else {
+		OutCRLF();
+		UART_OutString("Invalid parameter for screen number");
+		return;
+	}
+
+	// Check for valid line number
+		if (strcmp(g_ppcArgv[2],"0")==0 || (strcmp(g_ppcArgv[2],"1")==0) || strcmp(g_ppcArgv[2],"2")==0 || (strcmp(g_ppcArgv[2],"3")==0) || strcmp(g_ppcArgv[2],"4")==0 || (strcmp(g_ppcArgv[2],"5")==0) || strcmp(g_ppcArgv[2],"6")==0 || (strcmp(g_ppcArgv[2],"7")==0)) {
+		line = atoi(g_ppcArgv[2]);
+	} else {
+		OutCRLF();
+		UART_OutString("Invalid parameter for line number");
+		return;
+	}
+	
+	// Display message
+	char message[80];
+	message[0] = '\0';
+	for (uint16_t i = 3; i < ui8Argc; i++) {
+		sprintf(message, "%s %s", message, g_ppcArgv[i]);
+	}
+	ST7735_MessageString(screen, line, message);
+	OutCRLF(); UART_OutString(message);
 }
 
 ///*******************CommandOS*********************

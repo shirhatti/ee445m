@@ -6,11 +6,13 @@ Created by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 #include "cmdline.h"
 #include "PLL.h"
 #include "UART.h"
+#include "ST7735.h"
 
 
 int main(void){
   char string[80];  // global to assist in debugging
   PLL_Init();               // set system clock to 50 MHz
+	Output_Init();
   UART_Init();              // initialize UART
 	
   while(1){
