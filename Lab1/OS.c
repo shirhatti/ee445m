@@ -27,6 +27,8 @@
 #define TIMER_TAILR_M           0xFFFFFFFF  // GPTM Timer A Interval Load
                                             // Register
 
+#define GPIO_PORTF2             (*((volatile uint32_t *)0x40025010))
+	
 void DisableInterrupts(void); // Disable interrupts
 void EnableInterrupts(void);  // Enable interrupts
 long StartCritical (void);    // previous I bit, disable interrupts
@@ -73,6 +75,7 @@ int OS_AddPeriodicThread(void (*task)(void), unsigned long period, unsigned long
 }
 
 void Timer1A_Handler(void){
+	GPIO_PORTF2 = 0x04;  
   TIMER1_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer1A timeout
 	Counter++;
   
@@ -82,6 +85,7 @@ void Timer1A_Handler(void){
 	} */
 	
 	(*PeriodicTask)();                // execute user task
+	GPIO_PORTF2 = 0x00;
 }
 
 /**************OS_ClearPeriodicTime***************
