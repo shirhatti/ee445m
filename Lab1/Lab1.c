@@ -31,9 +31,12 @@ int main(void){
   GPIO_PORTF_PCTL_R = (GPIO_PORTF_PCTL_R&0xFFFFF0FF)+0x00000000;
   GPIO_PORTF_AMSEL_R = 0;               // disable analog functionality on PF
   GPIO_PORTF2 = 0;                      // turn off LED	
+	
   while(1){
     OutCRLF(); UART_OutString(">");
     UART_InString(string,79);
-		CmdLineProcess(string);
+		if(CmdLineProcess(string) == -1) {
+			UART_OutString("command not recognized");
+		}
   }
 }

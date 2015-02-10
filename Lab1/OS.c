@@ -105,3 +105,11 @@ void OS_ClearPeriodicTime(void) {
 unsigned long OS_ReadPeriodicTime(void) {
 	return Counter;
 }
+
+void OS_StartPeriodicThread(void) {
+	TIMER1_CTL_R |= TIMER_CTL_TAEN;
+}
+
+void OS_StopPeriodicThread(void) {
+	TIMER1_CTL_R |= ~TIMER_CTL_TAEN;
+}

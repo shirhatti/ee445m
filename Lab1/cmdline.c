@@ -41,6 +41,8 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 #include "cmdline.h"
 #include "UART.h"
 #include "ST7735.h"
+#include "OS.h"
+#include "ADCT0ATrigger.h"
 
 //*****************************************************************************
 //
@@ -211,24 +213,35 @@ char HelpOS[] = "Send commands to the OS";
           g_ppcArgv is an array containing the commands
  Outputs: error (-1); success (channel #)
 *************************************************/ 
-//void CommandADC(uint_fast8_t ui8Argc, static char *g_ppcArgv[]) {
-//  int channel = atoi(g_ppcArgv[2]);
-//  
-//  if((channel < 0) || (channel > 11)) { return -1; }
-//  if(strcmp("open",g_ppcArgv[1]) == 0) {
-//    ADC_Open(channel);
-//  } 
-//  else if(strcmp("collect",g_ppcArgv[1]) == 0) {
-//    ADC_Collect(channel, Fs, buffer, numSamples)
-//  }
-//  else if(strcmp("read",g_ppcArgv[1]) == 0) {
-//    ADC0_In(channel)
-//    UART_OutUDec
-//  } 
-//  "open"
-//  "collect"
-//  "read"
-//}
+void CommandADC(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
+    uint32_t channel, Fs, numSamples;
+    uint16_t buffer[100];
+	
+    //Check if number of arguments are correct
+    if (ui8Argc != 3) {
+        OutCRLF();
+        UART_OutString("All adc functions require exactly 1 parameter");
+        return;
+    }
+    // Check if a valid channel
+   if (strcmp(g_ppcArgv[2],"0")==0 || (strcmp(g_ppcArgv[2],"1")==0) || strcmp(g_ppcArgv[2],"2")==0 || (strcmp(g_ppcArgv[2],"3")==0) || strcmp(g_ppcArgv[2],"4")==0 || (strcmp(g_ppcArgv[2],"5")==0) || strcmp(g_ppcArgv[2],"6")==0 || (strcmp(g_ppcArgv[2],"7")==0) || strcmp(g_ppcArgv[2],"8")==0 || (strcmp(g_ppcArgv[2],"9")==0) || strcmp(g_ppcArgv[2],"10")==0 || (strcmp(g_ppcArgv[2],"11")==0)) {
+            channel = atoi(g_ppcArgv[2]);
+    } else {
+        OutCRLF();
+        UART_OutString("Invalid channel number specified to adc function");
+        return;
+    }
+    
+    // Check for command open
+    if (strcmp("open", g_ppcArgv[1])==0) {
+        ADC0_Open(channel);   
+    } else if(strcmp("collect",g_ppcArgv[1]) == 0) {
+        ADC_Collect(channel, Fs, buffer, numSamples);
+    } else if(strcmp("read",g_ppcArgv[1]) == 0) {
+        UART_OutUDec(ADC_In());
+        //Display value to screen/UART?
+    } 
+}
 
 /*******************CommandLCD********************
  Send debugging commands to the LCD
@@ -237,54 +250,74 @@ char HelpOS[] = "Send commands to the OS";
  Outputs: error (-1); success (0)
 *************************************************/ 
 void CommandLCD(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
-	int16_t screen = 0, line = 0;
-	if (ui8Argc <= 3) {
-		OutCRLF();
-		UART_OutString("Insufficient arguments for command lcd");
-		return;
-	}
-	
-	//Check for valid screen number
-	if (strcmp(g_ppcArgv[1],"0")==0 || (strcmp(g_ppcArgv[1],"1")==0)) {
-		screen = atoi(g_ppcArgv[1]);
-	} else {
-		OutCRLF();
-		UART_OutString("Invalid parameter for screen number");
-		return;
-	}
+    int16_t screen = 0, line = 0;
+    if (ui8Argc <= 3) {
+        OutCRLF();
+        UART_OutString("Insufficient arguments for command lcd");
+        return;
+    }
+    
+    //Check for valid screen number
+    if (strcmp(g_ppcArgv[1],"0")==0 || (strcmp(g_ppcArgv[1],"1")==0)) {
+        screen = atoi(g_ppcArgv[1]);
+    } else {
+        OutCRLF();
+        UART_OutString("Invalid parameter for screen number");
+        return;
+    }
 
-	// Check for valid line number
-		if (strcmp(g_ppcArgv[2],"0")==0 || (strcmp(g_ppcArgv[2],"1")==0) || strcmp(g_ppcArgv[2],"2")==0 || (strcmp(g_ppcArgv[2],"3")==0) || strcmp(g_ppcArgv[2],"4")==0 || (strcmp(g_ppcArgv[2],"5")==0) || strcmp(g_ppcArgv[2],"6")==0 || (strcmp(g_ppcArgv[2],"7")==0)) {
-		line = atoi(g_ppcArgv[2]);
-	} else {
-		OutCRLF();
-		UART_OutString("Invalid parameter for line number");
-		return;
-	}
-	
-	// Display message
-	char message[80];
-	message[0] = '\0';
-	for (uint16_t i = 3; i < ui8Argc; i++) {
-		sprintf(message, "%s %s", message, g_ppcArgv[i]);
-	}
-	ST7735_MessageString(screen, line, message);
-	OutCRLF(); UART_OutString(message);
+    // Check for valid line number
+        if (strcmp(g_ppcArgv[2],"0")==0 || (strcmp(g_ppcArgv[2],"1")==0) || strcmp(g_ppcArgv[2],"2")==0 || (strcmp(g_ppcArgv[2],"3")==0) || strcmp(g_ppcArgv[2],"4")==0 || (strcmp(g_ppcArgv[2],"5")==0) || strcmp(g_ppcArgv[2],"6")==0 || (strcmp(g_ppcArgv[2],"7")==0)) {
+        line = atoi(g_ppcArgv[2]);
+    } else {
+        OutCRLF();
+        UART_OutString("Invalid parameter for line number");
+        return;
+    }
+    
+    // Display message
+    char message[80];
+    message[0] = '\0';
+    for (uint16_t i = 3; i < ui8Argc; i++) {
+        sprintf(message, "%s %s", message, g_ppcArgv[i]);
+    }
+    ST7735_MessageString(screen, line, message);
+    OutCRLF(); UART_OutString(message);
 }
 
-///*******************CommandOS*********************
-// Send debugging commands to the OS
-//   Input: ui8Argc is the number of commands parsed
-//          g_ppcArgv is an array containing the commands
-// Outputs: error (-1); success (0)
-//*************************************************/ 
-//void CommandOS(uint_fast8_t ui8Argc, static char *g_ppcArgv[]) {
-//  "execute"
-//}
-
+/*******************CommandOS*********************
+ Send debugging commands to the OS
+   Input: ui8Argc is the number of commands parsed
+          g_ppcArgv is an array containing the commands
+ Outputs: error (-1); success (0)
+*************************************************/ 
+void CommandOS(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
+    if (ui8Argc < 2) {
+        OutCRLF();
+        UART_OutString("Insufficient arguments for command os");
+        return;    
+    }
+    
+    if (strcmp(g_ppcArgv[1],"clear") == 0) {
+        OS_ClearPeriodicTime();
+    }
+    else if (strcmp(g_ppcArgv[1],"read") == 0) {
+        UART_OutString(" ");
+				UART_OutUDec(OS_ReadPeriodicTime());
+    }
+		else if (strcmp("stop", g_ppcArgv[1]) == 0) {
+        OS_StopPeriodicThread();
+    }
+		else if (strcmp(g_ppcArgv[1],"start") == 0) {
+        OS_StartPeriodicThread();
+    }
+    else {
+        UART_OutString("command os argument not recognized");
+    }
+}
 // Command Table as defined by Tivaware
 tCmdLineEntry g_psCmdTable[] = {
-//    { "adc", CommandADC, HelpADC },
+    { "adc", CommandADC, HelpADC },
     { "lcd", CommandLCD, HelpLCD },
-//    { "os", CommandOS, HelpOS }
+    { "os", CommandOS, HelpOS }
 };

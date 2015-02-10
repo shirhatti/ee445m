@@ -24,4 +24,7 @@ void OS_ClearPeriodicTime(void);
 *************************************************/
 unsigned long OS_ReadPeriodicTime(void);
 
+void OS_StartPeriodicThread(void);
+
+void OS_StopPeriodicThread(void);
 #endif // __OS_H__
