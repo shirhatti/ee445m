@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 #include "inc/tm4c123gh6pm.h"
+#include "OS.h"
 
 #define NVIC_EN0_INT21          0x00200000  // Interrupt 21 enable
 
@@ -38,7 +39,7 @@ static unsigned long Counter = 0;
 /**************OS_AddPeriodicThread***************
  Activate Timer1 interrupts to run user task periodically
    Input: task is a pointer to a user function
-				  period in units (1/clockfreq)
+				  period in ms
 				  priority (0-7)
  Outputs: error (1); success (0)
 *************************************************/ 
@@ -49,7 +50,7 @@ int OS_AddPeriodicThread(void (*task)(void), unsigned long period, unsigned long
   Counter = 0;
   
   sr = StartCritical();
-  SYSCTL_RCGCTIMER_R |= 0x01;
+  SYSCTL_RCGCTIMER_R |= 0x02;
   
   PeriodicTask = task;             // user function
   TIMER1_CTL_R &= ~TIMER_CTL_TAEN; // 1) disable timer1A during setup
@@ -57,7 +58,7 @@ int OS_AddPeriodicThread(void (*task)(void), unsigned long period, unsigned long
   TIMER1_CFG_R = TIMER_CFG_32_BIT_TIMER;
                                    // 3) configure for periodic mode, default down-count settings
   TIMER1_TAMR_R = TIMER_TAMR_TAMR_PERIOD;
-  TIMER1_TAILR_R = period - 1;     // 4) reload value
+  TIMER1_TAILR_R = (period*50000) - 1;     // 4) reload value
                                    // 5) clear timer1A timeout flag
   TIMER1_ICR_R = TIMER_ICR_TATOCINT;
   TIMER1_IMR_R |= TIMER_IMR_TATOIM;// 6) arm timeout interrupt
