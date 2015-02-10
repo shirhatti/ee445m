@@ -1,4 +1,4 @@
-//******Filename: OS.h**************//
+//******Filename: OS.c**************//
 //*******Authors: Sourabh Shirhatti*//
 //*************** Nelson Wu*********//
 //*******Created: Jan 24, 2015******//
@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include "inc/tm4c123gh6pm.h"
 
-#define NVIC_EN0_INT19          0x00080000  // Interrupt 19 enable
+#define NVIC_EN0_INT21          0x00200000  // Interrupt 21 enable
 
 #define TIMER_CFG_32_BIT_TIMER  0x00000000  // 32-bit timer configuration
 #define TIMER_TAMR_TACDIR       0x00000010  // GPTM Timer A Count Direction
@@ -36,43 +36,43 @@ void (*PeriodicTask)(void);   // user function
 static unsigned long Counter = 0;
 
 /**************OS_AddPeriodicThread***************
- Activate Timer0 interrupts to run user task periodically
+ Activate Timer1 interrupts to run user task periodically
    Input: task is a pointer to a user function
 				  period in units (1/clockfreq)
 				  priority (0-7)
  Outputs: error (1); success (0)
 *************************************************/ 
 int OS_AddPeriodicThread(void (*task)(void), unsigned long period, unsigned long priority) {
-	long sr;
+  long sr;
 	
-	if(priority > 7) { return 1; }
-	Counter = 0;
-	
-	sr = StartCritical();
+  if(priority > 7) { return 1; }
+  Counter = 0;
+  
+  sr = StartCritical();
   SYSCTL_RCGCTIMER_R |= 0x01;
   
   PeriodicTask = task;             // user function
-  TIMER0_CTL_R &= ~TIMER_CTL_TAEN; // 1) disable timer0A during setup
+  TIMER1_CTL_R &= ~TIMER_CTL_TAEN; // 1) disable timer1A during setup
                                    // 2) configure for 32-bit timer mode
-  TIMER0_CFG_R = TIMER_CFG_32_BIT_TIMER;
+  TIMER1_CFG_R = TIMER_CFG_32_BIT_TIMER;
                                    // 3) configure for periodic mode, default down-count settings
-  TIMER0_TAMR_R = TIMER_TAMR_TAMR_PERIOD;
-  TIMER0_TAILR_R = period - 1;     // 4) reload value
-                                   // 5) clear timer0A timeout flag
-  TIMER0_ICR_R = TIMER_ICR_TATOCINT;
-  TIMER0_IMR_R |= TIMER_IMR_TATOIM;// 6) arm timeout interrupt
-																	 // 7) priority shifted to bits 31-29 for timer0A
-  NVIC_PRI4_R = (NVIC_PRI4_R&0x00FFFFFF)|(priority << 29);	
-  NVIC_EN0_R = NVIC_EN0_INT19;     // 8) enable interrupt 19 in NVIC
-  TIMER0_TAPR_R = 0;
-  TIMER0_CTL_R |= TIMER_CTL_TAEN;  // 9) enable timer0A
+  TIMER1_TAMR_R = TIMER_TAMR_TAMR_PERIOD;
+  TIMER1_TAILR_R = period - 1;     // 4) reload value
+                                   // 5) clear timer1A timeout flag
+  TIMER1_ICR_R = TIMER_ICR_TATOCINT;
+  TIMER1_IMR_R |= TIMER_IMR_TATOIM;// 6) arm timeout interrupt
+								   // 7) priority shifted to bits 15-13 for timer1A
+  NVIC_PRI5_R = (NVIC_PRI5_R&0xFFFF00FF)|(priority << 13);	
+  NVIC_EN0_R = NVIC_EN0_INT21;     // 8) enable interrupt 21 in NVIC
+  TIMER1_TAPR_R = 0;
+  TIMER1_CTL_R |= TIMER_CTL_TAEN;  // 9) enable timer1A
 	
   EndCritical(sr);
 	return 0;
 }
 
-void Timer0A_Handler(void){
-  TIMER0_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer0A timeout
+void Timer1A_Handler(void){
+  TIMER1_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer1A timeout
 	Counter++;
   
 	/*if(Counter == 0xFFFFFFFF) {
@@ -84,24 +84,18 @@ void Timer0A_Handler(void){
 }
 
 /**************OS_ClearPeriodicTime***************
- converts fixed point number to ASCII string
- format: signed 32-bit with resolution 0.001
-  range: -9.999 to +9.999
-  Input: signed 32-bit integer part of fixed point number
-				 greater or less than range is invalid number
-  Output: null-terminated string exactly 6 characters plus null 
+ clear the 32-bit global counter
+  Input: none
+  Output: none
 *************************************************/
 void OS_ClearPeriodicTime(void) {
 	Counter = 0;
 }
 
 /**************OS_ReadPeriodicTime***************
- converts fixed point number to ASCII string
- format: signed 32-bit with resolution 0.001
-  range: -9.999 to +9.999
-  Input: signed 32-bit integer part of fixed point number
-				 greater or less than range is invalid number
-  Output: null-terminated string exactly 6 characters plus null 
+ reads the current value of the 32-bit global counter
+  Input: none
+  Output: current counter value
 *************************************************/
 unsigned long OS_ReadPeriodicTime(void) {
 	return Counter;
