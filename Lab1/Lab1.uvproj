@@ -144,7 +144,7 @@
             <UsePdscDebugDescription>1</UsePdscDebugDescription>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>3</TargetSelection>
+          <TargetSelection>4</TargetSelection>
           <SimDlls>
             <CpuDll></CpuDll>
             <CpuDllArguments></CpuDllArguments>
@@ -421,11 +421,6 @@
               <FilePath>.\UART.c</FilePath>
             </File>
             <File>
-              <FileName>cmdline.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\cmdline.h</FilePath>
-            </File>
-            <File>
               <FileName>cmdline.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\cmdline.c</FilePath>
@@ -434,6 +429,21 @@
               <FileName>Lab1.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Lab1.c</FilePath>
+            </File>
+            <File>
+              <FileName>OS.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\OS.c</FilePath>
+            </File>
+            <File>
+              <FileName>ST7735.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\ST7735.c</FilePath>
+            </File>
+            <File>
+              <FileName>ADCT0ATrigger.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\ADCT0ATrigger.c</FilePath>
             </File>
           </Files>
         </Group>

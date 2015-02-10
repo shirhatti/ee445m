@@ -11,3 +11,5 @@
 *.lst
 *.lnp
 *.bak
+*.uvgui.*
+*.uvopt
