@@ -1,3 +1,7 @@
+/***************************************************
+Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
+****************************************************/
+
 // filename **********OS.H***********
 // Real Time Operating System for Labs 2 and 3 
 // Jonathan W. Valvano 1/27/14, valvano@mail.utexas.edu

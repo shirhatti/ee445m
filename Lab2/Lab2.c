@@ -1,3 +1,7 @@
+/***************************************************
+Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
+****************************************************/
+
 // Lab2.c
 // Runs on LM4F120/TM4C123
 // Real Time Operating System for Labs 2 and 3
@@ -23,12 +27,21 @@
 // PD3 Ain3 sampled at 2k, sequencer 3, by DAS software start in ISR
 // PD2 Ain5 sampled at 250Hz, sequencer 0, by Producer, timer tigger
 
+// #define LAB2_2
+// #define LAB3
+
 #include "OS.h"
 #include "inc/tm4c123gh6pm.h"
+#include <string.h> 
+
+#ifdef LAB2_2
+
 #include "ST7735.h"
 #include "ADC.h"
 #include "UART2.h"
-#include <string.h> 
+
+#endif
+
 //*********Prototype for FFT in cr4_fft_64_stm32.s, STMicroelectronics
 void cr4_fft_64_stm32(void *pssOUT, void *pssIN, unsigned short Nbin);
 //*********Prototype for PID in PID_stm32.s, STMicroelectronics
@@ -56,6 +69,13 @@ unsigned long JitterHistogram[JITTERSIZE]={0,};
 #define PE2  (*((volatile unsigned long *)0x40024010))
 #define PE3  (*((volatile unsigned long *)0x40024020))
 
+int Testmain1(void);
+int Testmain2(void);
+
+int main(void) {
+	Testmain1();
+}
+
 void PortE_Init(void){ unsigned long volatile delay;
   SYSCTL_RCGC2_R |= 0x10;       // activate port E
   delay = SYSCTL_RCGC2_R;        
@@ -66,6 +86,9 @@ void PortE_Init(void){ unsigned long volatile delay;
   GPIO_PORTE_PCTL_R = ~0x0000FFFF;
   GPIO_PORTE_AMSEL_R &= ~0x0F;;      // disable analog functionality on PF
 }
+
+#ifdef LAB2_2
+
 //------------------Task 1--------------------------------
 // 2 kHz sampling ADC channel 1, using software start trigger
 // background thread executed at 2 kHz
@@ -291,7 +314,6 @@ void Interpreter(void);    // just a prototype, link to your interpreter
 //    i.e., x[], y[] 
 //--------------end of Task 5-----------------------------
 
-
 //*******************final user main DEMONTRATE THIS TO TA**********
 int main(void){ 
   OS_Init();           // initialize, disable interrupts
@@ -319,6 +341,8 @@ int main(void){
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes
 }
+
+#endif
 
 //+++++++++++++++++++++++++DEBUGGING CODE++++++++++++++++++++++++
 // ONCE YOUR RTOS WORKS YOU CAN COMMENT OUT THE REMAINING CODE
@@ -417,8 +441,10 @@ int Testmain2(void){  // Testmain2
   return 0;            // this never executes
 }
 
+#ifdef LAB2_2
+
 //*******************Third TEST**********
-// Once the second test runs, test this (Lab 1 part 2)
+// Once the second test runs, test this (Lab 2 part 2)
 // no UART1 interrupts
 // SYSTICK interrupts, with or without period established by OS_Launch
 // Timer interrupts, with or without period established by OS_AddPeriodicThread
@@ -483,7 +509,7 @@ int Testmain3(void){   // Testmain3
 }
 
 //*******************Fourth TEST**********
-// Once the third test runs, run this example (Lab 1 part 2)
+// Once the third test runs, run this example (Lab 2 part 2)
 // Count1 should exactly equal Count2
 // Count3 should be very large
 // Count4 increases by 640 every time select is pressed
@@ -542,6 +568,10 @@ int Testmain4(void){   // Testmain4
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes
 }
+
+#endif
+
+#ifdef LAB3
 
 //******************* Lab 3 Preparation 2**********
 // Modify this so it runs with your RTOS (i.e., fix the time units to match your OS)
@@ -710,7 +740,6 @@ int Testmain6(void){      // Testmain6  Lab 3
   return 0;             // this never executes
 }
 
-
 //******************* Lab 3 Measurement of context switch time**********
 // Run this to measure the time it takes to perform a task switch
 // UART0 not needed 
@@ -735,3 +764,4 @@ int Testmain7(void){       // Testmain7
   return 0;             // this never executes
 }
 
+#endif
