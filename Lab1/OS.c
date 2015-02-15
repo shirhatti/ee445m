@@ -74,19 +74,24 @@ int OS_AddPeriodicThread(void (*task)(void), unsigned long period, unsigned long
 	return 0;
 }
 
-void Timer1A_Handler(void){
-	GPIO_PORTF2 = 0x04;  
+void Timer1A_Handler(void){ 
   TIMER1_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer1A timeout
 	Counter++;
-  
-	/*if(Counter == 0xFFFFFFFF) {
-			OverflowCount++;
-			Counter = 0;
-	} */
 	
 	(*PeriodicTask)();                // execute user task
-	GPIO_PORTF2 = 0x00;
 }
+
+//	GPIO_PORTF2 = 0x04;  
+//  TIMER1_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer1A timeout
+//	Counter++;
+//  
+//	/*if(Counter == 0xFFFFFFFF) {
+//			OverflowCount++;
+//			Counter = 0;
+//	} */
+//	
+//	(*PeriodicTask)();                // execute user task
+//	GPIO_PORTF2 = 0x00;
 
 /**************OS_ClearPeriodicTime***************
  clear the 32-bit global counter
