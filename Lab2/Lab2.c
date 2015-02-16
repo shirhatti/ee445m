@@ -27,7 +27,7 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 // PD3 Ain3 sampled at 2k, sequencer 3, by DAS software start in ISR
 // PD2 Ain5 sampled at 250Hz, sequencer 0, by Producer, timer tigger
 
-// #define LAB2_2
+// #define LAB2_2 
 // #define LAB3
 
 #include "OS.h"
@@ -73,10 +73,11 @@ int Testmain1(void);
 int Testmain2(void);
 
 int main(void) {
-	Testmain1();
+	Testmain2();
 }
 
-void PortE_Init(void){ unsigned long volatile delay;
+void PortE_Init(void){ 
+	unsigned long volatile delay;
   SYSCTL_RCGC2_R |= 0x10;       // activate port E
   delay = SYSCTL_RCGC2_R;        
   delay = SYSCTL_RCGC2_R;         
@@ -348,7 +349,7 @@ int main(void){
 // ONCE YOUR RTOS WORKS YOU CAN COMMENT OUT THE REMAINING CODE
 // 
 //*******************Initial TEST**********
-// This is the simplest configuration, test this first, (Lab 1 part 1)
+// This is the simplest configuration, test this first, (Lab 2 part 1)
 // run this with 
 // no UART interrupts
 // no SYSTICK interrupts
@@ -399,7 +400,7 @@ int Testmain1(void){  // Testmain1
 }
 
 //*******************Second TEST**********
-// Once the initalize test runs, test this (Lab 1 part 1)
+// Once the initalize test runs, test this (Lab 2 part 1)
 // no UART interrupts
 // SYSTICK interrupts, with or without period established by OS_Launch
 // no timer interrupts

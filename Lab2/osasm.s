@@ -1,4 +1,8 @@
-;/*****************************************************************************/
+;/***************************************************
+; Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
+;****************************************************/
+
+;/***************************************************************************/
 ; OSasm.s: low-level OS commands, written in assembly                       */
 ; Runs on LM4F120/TM4C123
 ; A very simple real time operating system with minimal features.
@@ -33,6 +37,7 @@
         EXPORT  OS_EnableInterrupts
         EXPORT  StartOS
         EXPORT  SysTick_Handler
+		EXPORT  PendSV_Handler
 
 
 OS_DisableInterrupts
@@ -44,7 +49,7 @@ OS_EnableInterrupts
         CPSIE   I
         BX      LR
 
-
+PendSV_Handler
 SysTick_Handler                ; 1) Saves R0-R3,R12,LR,PC,PSR
     CPSID   I                  ; 2) Prevent interrupt during switch
     PUSH    {R4-R11}           ; 3) Save remaining regs r4-11

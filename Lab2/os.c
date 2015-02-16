@@ -2,6 +2,9 @@
 Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 ****************************************************/
 
+// Used with Testmain2; comment out when running Testmain1
+#define WITH_SYSTICK
+
 // os.c
 // Runs on LM4F120/TM4C123
 // A very simple real time operating system with minimal features.
@@ -102,22 +105,18 @@ int OSAddThreads(void(*task0)(void),
 // input:  none
 // output: none
 void OS_Init(void) {
-}
-
-/********* GIVEN IMPLEMETATION **
-// ******** OS_Init ************
-// initialize operating system, disable interrupts until OS_Launch
-// initialize OS controlled I/O: systick, 50 MHz PLL
-// input:  none
-// output: none
-void OS_Init(void){
-  OS_DisableInterrupts();
+	OS_DisableInterrupts();
   PLL_Init();                 // set processor clock to 50 MHz
+#ifdef WITH_SYSTICK
   NVIC_ST_CTRL_R = 0;         // disable SysTick during setup
   NVIC_ST_CURRENT_R = 0;      // any write to current clears it
+															// lowest PRI so only foreground interrupted
   NVIC_SYS_PRI3_R =(NVIC_SYS_PRI3_R&0x00FFFFFF)|0xE0000000; // priority 7
+#else
+	// Use PendSV to trigger a context switch
+	NVIC_SYS_PRI3_R =(NVIC_SYS_PRI3_R&0xFF00FFFF)|0x00E00000; // priority 7
+#endif	
 }
-********************************/
 
 // ******** OS_InitSemaphore ************
 // initialize semaphore 
@@ -170,7 +169,25 @@ void OS_bSignal(Sema4Type *semaPt) {
 // In Lab 2, you can ignore both the stackSize and priority fields
 // In Lab 3, you can ignore the stackSize fields
 int OS_AddThread(void(*task)(void), 
-   unsigned long stackSize, unsigned long priority) { 
+   unsigned long stackSize, unsigned long priority) {		 
+	static uint32_t NumThreads = 0; 
+	int32_t status;
+		 
+  status = StartCritical();
+	if(NumThreads == 0) {		
+		tcbs[0].next = &tcbs[0]; // 0 points to 1
+		RunPt = &tcbs[0];     // thread 0 will run first
+	}
+	else {
+		tcbs[NumThreads-1].next = &tcbs[NumThreads];
+		tcbs[NumThreads].next = &tcbs[0];
+	}
+	SetInitialStack(NumThreads); 
+	Stacks[NumThreads][STACKSIZE-2] = (int32_t)(task); // PC
+	NumThreads++;
+  EndCritical(status);
+	
+  return 1;               // successful
 }
 
 //******** OS_Id *************** 
@@ -257,6 +274,12 @@ void OS_Kill(void) {
 // input:  none
 // output: none
 void OS_Suspend(void) { 
+#ifdef WITH_SYSTICK	
+	NVIC_ST_CURRENT_R = 0;					// clear counter
+	NVIC_INT_CTRL_R = 0x04000000;		// trigger SysTick
+#else
+	NVIC_INT_CTRL_R = 0x10000000;		// trigger PendSV
+#endif
 }
  
 // ******** OS_Fifo_Init ************
@@ -371,16 +394,9 @@ unsigned long OS_MsTime(void) {
 // In Lab 3, you should implement the user-defined TimeSlice field
 // It is ok to limit the range of theTimeSlice to match the 24-bit SysTick
 void OS_Launch(unsigned long theTimeSlice) {
-}
-/**** GIVEN IMPLEMENTATION
-///******** OS_Launch ***************
-// start the scheduler, enable interrupts
-// Inputs: number of 20ns clock cycles for each time slice
-//         (maximum of 24 bits)
-// Outputs: none (does not return)
-void OS_Launch(unsigned long theTimeSlice){
-  NVIC_ST_RELOAD_R = theTimeSlice - 1; // reload value
+#ifdef WITH_SYSTICK
+	NVIC_ST_RELOAD_R = theTimeSlice - 1; // reload value
   NVIC_ST_CTRL_R = 0x00000007; // enable, core clock and interrupt arm
+#endif
   StartOS();                   // start on the first task
 }
-*************************************/
