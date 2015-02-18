@@ -69,11 +69,16 @@ unsigned long JitterHistogram[JITTERSIZE]={0,};
 #define PE2  (*((volatile unsigned long *)0x40024010))
 #define PE3  (*((volatile unsigned long *)0x40024020))
 
+//#define MAIN1
 int Testmain1(void);
 int Testmain2(void);
 
 int main(void) {
+	#ifdef MAIN1
+	Testmain1();
+	#else
 	Testmain2();
+	#endif
 }
 
 void PortE_Init(void){ 
@@ -364,11 +369,12 @@ unsigned long Count4;   // number of times thread4 loops
 unsigned long Count5;   // number of times thread5 loops
 void Thread1(void){
   Count1 = 0;          
-  for(;;){
+  //for(;;){
     PE0 ^= 0x01;       // heartbeat
     Count1++;
-    OS_Suspend();      // cooperative multitasking
-  }
+			return;
+	OS_Suspend();      // cooperative multitasking
+  //}
 }
 void Thread2(void){
   Count2 = 0;          
@@ -411,6 +417,7 @@ void Thread1b(void){
   Count1 = 0;          
   for(;;){
     PE0 ^= 0x01;       // heartbeat
+		//return;
     Count1++;
   }
 }
@@ -419,6 +426,7 @@ void Thread2b(void){
   for(;;){
     PE1 ^= 0x02;       // heartbeat
     Count2++;
+		return;
   }
 }
 void Thread3b(void){

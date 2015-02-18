@@ -175,7 +175,7 @@ int OS_AddThread(void(*task)(void),
 		 
   status = StartCritical();
 	if(NumThreads == 0) {		
-		tcbs[0].next = &tcbs[0]; // 0 points to 1
+		tcbs[0].next = &tcbs[0]; // 0 points to 0
 		RunPt = &tcbs[0];     // thread 0 will run first
 	}
 	else {
