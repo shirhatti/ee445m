@@ -369,12 +369,11 @@ unsigned long Count4;   // number of times thread4 loops
 unsigned long Count5;   // number of times thread5 loops
 void Thread1(void){
   Count1 = 0;          
-  //for(;;){
+  for(;;){
     PE0 ^= 0x01;       // heartbeat
     Count1++;
-			return;
-	OS_Suspend();      // cooperative multitasking
-  //}
+		OS_Suspend();      // cooperative multitasking
+  }
 }
 void Thread2(void){
   Count2 = 0;          
@@ -417,7 +416,6 @@ void Thread1b(void){
   Count1 = 0;          
   for(;;){
     PE0 ^= 0x01;       // heartbeat
-		//return;
     Count1++;
   }
 }
@@ -426,7 +424,6 @@ void Thread2b(void){
   for(;;){
     PE1 ^= 0x02;       // heartbeat
     Count2++;
-		return;
   }
 }
 void Thread3b(void){
@@ -479,7 +476,7 @@ void Thread2c(void){
   Count2 = 0;    
   Count5 = 0;    // Count2 + Count5 should equal Count1  
   NumCreated += OS_AddThread(&Thread5c,128,3); 
-  OS_AddPeriodicThread(&BackgroundThread1c,TIME_1MS,0); 
+//  OS_AddPeriodicThread(&BackgroundThread1c,TIME_1MS,0); 
   for(;;){
     OS_Wait(&Readyc);
     Count2++;   // Count2 + Count5 should equal Count1
@@ -509,7 +506,7 @@ int Testmain3(void){   // Testmain3
   OS_Init();           // initialize, disable interrupts
 // Count2 + Count5 should equal Count1
   NumCreated = 0 ;
-  OS_AddSW1Task(&BackgroundThread5c,2);
+//  OS_AddSW1Task(&BackgroundThread5c,2);
   NumCreated += OS_AddThread(&Thread2c,128,2); 
   NumCreated += OS_AddThread(&Thread3c,128,3); 
   NumCreated += OS_AddThread(&Thread4c,128,3); 

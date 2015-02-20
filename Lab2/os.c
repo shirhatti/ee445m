@@ -33,6 +33,9 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 #include "os.h"
 #include "PLL.h"
 
+// Additional includes for Lab 2
+#include "inc/tm4c123gh6pm.h"
+
 #define NVIC_ST_CTRL_R          (*((volatile uint32_t *)0xE000E010))
 #define NVIC_ST_CTRL_CLK_SRC    0x00000004  // Clock Source
 #define NVIC_ST_CTRL_INTEN      0x00000002  // Interrupt enable
@@ -43,6 +46,22 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 #define NVIC_INT_CTRL_PENDSTSET 0x04000000  // Set pending SysTick interrupt
 #define NVIC_SYS_PRI3_R         (*((volatile uint32_t *)0xE000ED20))  // Sys. Handlers 12 to 15 Priority
 
+// Additional defines for Lab 2
+#define NVIC_EN0_INT21          0x00200000  // Interrupt 21 enable
+
+#define TIMER_CFG_32_BIT_TIMER  0x00000000  // 32-bit timer configuration
+#define TIMER_TAMR_TACDIR       0x00000010  // GPTM Timer A Count Direction
+#define TIMER_TAMR_TAMR_PERIOD  0x00000002  // Periodic Timer mode
+#define TIMER_CTL_TAEN          0x00000001  // GPTM TimerA Enable
+#define TIMER_IMR_TATOIM        0x00000001  // GPTM TimerA Time-Out Interrupt
+                                            // Mask
+#define TIMER_ICR_TATOCINT      0x00000001  // GPTM TimerA Time-Out Raw
+                                            // Interrupt
+#define TIMER_TAILR_M           0xFFFFFFFF  // GPTM Timer A Interval Load
+                                            // Register
+
+#define GPIO_PORTF2             (*((volatile uint32_t *)0x40025010))
+	
 // function definitions in osasm.s
 void OS_DisableInterrupts(void); // Disable interrupts
 void OS_EnableInterrupts(void);  // Enable interrupts
@@ -55,11 +74,54 @@ void StartOS(void);
 struct tcb{
   int32_t *sp;       // pointer to stack (valid for threads not running
   struct tcb *next;  // linked-list pointer
+  int32_t *status;   // pointer to resource thread is blocked on (0 if not)
+  uint32_t sleepCt;	 // sleep counter
+  uint32_t age;      // how long the thread has been active
+  uint32_t id;       // thread #
+  uint32_t priority; // used in priority scheduling
 };
 typedef struct tcb tcbType;
 tcbType tcbs[NUMTHREADS];
 tcbType *RunPt;
 int32_t Stacks[NUMTHREADS][STACKSIZE];
+
+int i;
+
+int available[NUMTHREADS] = {1};
+
+int add_thread() {
+    int ret;
+    for (i=0; i < NUMTHREADS; i++) {
+        if (available[i]) {
+            ret = i;
+            available[i] = 0;
+            return ret;
+        }
+    }
+    return -1;
+}
+
+int find_prev(int thread) {
+    int ret;
+    for (i = thread - 1; i != thread; i = (i+NUMTHREADS-1)%NUMTHREADS ) {
+        if (!available[i]) {
+            ret = i;
+            return ret;
+        }
+    }
+		return -1;
+}
+
+int find_next(int thread) {
+    int ret;
+    for (i = thread + 1; i != thread; i = (i+1)%NUMTHREADS ) {
+        if (!available[i]) {
+            ret = i;
+            return ret;
+        }
+    }
+		return -1;
+}
 
 void SetInitialStack(int i){
   tcbs[i].sp = &Stacks[i][STACKSIZE-16]; // thread stack pointer
@@ -107,22 +169,23 @@ int OSAddThreads(void(*task0)(void),
 void OS_Init(void) {
 	OS_DisableInterrupts();
   PLL_Init();                 // set processor clock to 50 MHz
-#ifdef WITH_SYSTICK
+
   NVIC_ST_CTRL_R = 0;         // disable SysTick during setup
   NVIC_ST_CURRENT_R = 0;      // any write to current clears it
 															// lowest PRI so only foreground interrupted
   NVIC_SYS_PRI3_R =(NVIC_SYS_PRI3_R&0x00FFFFFF)|0xE0000000; // priority 7
-#else
+
 	// Use PendSV to trigger a context switch
-	NVIC_SYS_PRI3_R =(NVIC_SYS_PRI3_R&0xFF00FFFF)|0x00E00000; // priority 7
-#endif	
+	NVIC_SYS_PRI3_R =(NVIC_SYS_PRI3_R&0xFF00FFFF)|0x00D00000; // priority 6	
 }
+
 
 // ******** OS_InitSemaphore ************
 // initialize semaphore 
 // input:  pointer to a semaphore
 // output: none
 void OS_InitSemaphore(Sema4Type *semaPt, long value) { 
+  semaPt->Value = value;   // Should be free first (>0)
 } 
 
 // ******** OS_Wait ************
@@ -132,6 +195,14 @@ void OS_InitSemaphore(Sema4Type *semaPt, long value) {
 // input:  pointer to a counting semaphore
 // output: none
 void OS_Wait(Sema4Type *semaPt) { 
+  OS_DisableInterrupts();
+  while(semaPt->Value <= 0) {
+    OS_EnableInterrupts();
+	  OS_Suspend();       // run thread switcher
+	  OS_DisableInterrupts();
+  }
+  semaPt->Value -= 1;
+  OS_EnableInterrupts();
 } 
 
 // ******** OS_Signal ************
@@ -141,6 +212,10 @@ void OS_Wait(Sema4Type *semaPt) {
 // input:  pointer to a counting semaphore
 // output: none
 void OS_Signal(Sema4Type *semaPt) { 
+  int32_t status;
+  status = StartCritical();
+  semaPt->Value += 1;
+  EndCritical(status);
 } 
 
 // ******** OS_bWait ************
@@ -149,6 +224,14 @@ void OS_Signal(Sema4Type *semaPt) {
 // input:  pointer to a binary semaphore
 // output: none
 void OS_bWait(Sema4Type *semaPt) { 
+  OS_DisableInterrupts();
+  while(semaPt->Value == 0) {
+    OS_EnableInterrupts();
+	  OS_Suspend();       // run thread switcher
+	  OS_DisableInterrupts();
+  }
+  semaPt->Value = 0;
+  OS_EnableInterrupts();
 } 
 
 // ******** OS_bSignal ************
@@ -157,6 +240,10 @@ void OS_bWait(Sema4Type *semaPt) {
 // input:  pointer to a binary semaphore
 // output: none
 void OS_bSignal(Sema4Type *semaPt) { 
+  int32_t status;
+  status = StartCritical();
+  semaPt->Value = 1;
+  EndCritical(status);
 } 
 
 //******** OS_AddThread *************** 
@@ -170,20 +257,27 @@ void OS_bSignal(Sema4Type *semaPt) {
 // In Lab 3, you can ignore the stackSize fields
 int OS_AddThread(void(*task)(void), 
    unsigned long stackSize, unsigned long priority) {		 
+	int32_t status, thread;
 	static uint32_t NumThreads = 0; 
-	int32_t status;
-		 
+		
   status = StartCritical();
 	if(NumThreads == 0) {		
 		tcbs[0].next = &tcbs[0]; // 0 points to 0
 		RunPt = &tcbs[0];     // thread 0 will run first
 	}
 	else {
-		tcbs[NumThreads-1].next = &tcbs[NumThreads];
-		tcbs[NumThreads].next = &tcbs[0];
+		thread = add_thread();
+		tcbs[find_prev(thread)].next = &tcbs[thread];
+		tcbs[thread].next = &tcbs[find_next(thread)];
 	}
-	SetInitialStack(NumThreads); 
-	Stacks[NumThreads][STACKSIZE-2] = (int32_t)(task); // PC
+	
+	tcbs[thread].status = 0;
+  tcbs[thread].sleepCt = 0;
+  tcbs[thread].age = 0;
+  tcbs[thread].id = thread;
+	
+	SetInitialStack(thread); 
+	Stacks[thread][STACKSIZE-2] = (int32_t)(task); // PC
 	NumThreads++;
   EndCritical(status);
 	
@@ -197,6 +291,39 @@ int OS_AddThread(void(*task)(void),
 unsigned long OS_Id(void) { 
 }
 
+void InitTimer1A(void) {
+	long sr;
+	volatile unsigned long delay;
+ // if(priority > 5) { return; }
+	
+	sr = StartCritical();
+  SYSCTL_RCGCTIMER_R |= 0x02;
+  delay = SYSCTL_RCGCTIMER_R;
+	delay = SYSCTL_RCGCTIMER_R;
+ // PeriodicTask = task;
+  TIMER1_CTL_R &= ~TIMER_CTL_TAEN; // 1) disable timer1A during setup
+                                   // 2) configure for 32-bit timer mode
+  TIMER1_CFG_R = TIMER_CFG_32_BIT_TIMER;
+                                   // 3) configure for periodic mode, default down-count settings
+  TIMER1_TAMR_R = TIMER_TAMR_TAMR_PERIOD;
+  TIMER1_TAILR_R = 80000 - 1;     // 4) reload value
+                                   // 5) clear timer1A timeout flag
+  TIMER1_ICR_R = TIMER_ICR_TATOCINT;
+  TIMER1_IMR_R |= TIMER_IMR_TATOIM;// 6) arm timeout interrupt
+								   // 7) priority shifted to bits 15-13 for timer1A
+  NVIC_PRI5_R = (NVIC_PRI5_R&0xFFFF00FF)|(1 << 13);	
+  NVIC_EN0_R = NVIC_EN0_INT21;     // 8) enable interrupt 21 in NVIC
+  TIMER1_TAPR_R = 0;
+  TIMER1_CTL_R |= TIMER_CTL_TAEN;  // 9) enable timer1A
+	
+  EndCritical(sr);
+}
+
+void Timer1A_Handler(void){ 
+  TIMER1_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer1A timeout
+ // SystemTime++;
+  RunPt->sleepCt -= 1;
+}
 //******** OS_AddPeriodicThread *************** 
 // add a background periodic task
 // typically this function receives the highest priority
@@ -264,6 +391,11 @@ void OS_Sleep(unsigned long sleepTime) {
 // input:  none
 // output: none
 void OS_Kill(void) { 
+	uint32_t thread;
+	thread = RunPt->id;
+	
+	find_next(thread)
+	find_prev(thread)
 } 
 
 // ******** OS_Suspend ************
@@ -399,4 +531,8 @@ void OS_Launch(unsigned long theTimeSlice) {
   NVIC_ST_CTRL_R = 0x00000007; // enable, core clock and interrupt arm
 #endif
   StartOS();                   // start on the first task
+}
+
+void SysTick_Handler(void) {
+  NVIC_INT_CTRL_R = 0x10000000;		// trigger PendSV
 }
