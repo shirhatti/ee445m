@@ -72,13 +72,15 @@ unsigned long JitterHistogram[JITTERSIZE]={0,};
 //#define MAIN1
 int Testmain1(void);
 int Testmain2(void);
+int Testmain2b(void);
 
 int main(void) {
-	#ifdef MAIN1
-	Testmain1();
-	#else
-	Testmain2();
-	#endif
+//	#ifdef MAIN1
+//	Testmain1();
+//	#else
+//	Testmain2();
+//	#endif
+	Testmain2b();
 }
 
 void PortE_Init(void){ 
@@ -431,6 +433,8 @@ void Thread3b(void){
   for(;;){
     PE2 ^= 0x04;       // heartbeat
     Count3++;
+		if (Count3 == 1000)
+			OS_Kill();
   }
 }
 int Testmain2(void){  // Testmain2
@@ -444,6 +448,41 @@ int Testmain2(void){  // Testmain2
   // counts are larger than testmain1
  
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
+  return 0;            // this never executes
+}
+
+Sema4Type Readyc;
+
+void Thread1bb(void){
+	OS_InitSemaphore(&Readyc,0);
+  Count1 = 0;          
+  for(;;){
+    //PE0 ^= 0x01;       // heartbeat
+    Count1++;
+		if (Count1 == 50000) {
+			OS_Signal(&Readyc);
+		}
+		OS_Suspend();      // cooperative multitasking
+  }
+}
+void Thread2bb(void){
+  Count2 = 0;
+	OS_Wait(&Readyc);	
+  for(;;){
+    //PE1 ^= 0x02;       // heartbeat
+    Count2++;
+    OS_Suspend();      // cooperative multitasking
+  }
+}
+
+
+int Testmain2b(void) {
+	OS_Init();
+	NumCreated = 0;
+	NumCreated += OS_AddThread(&Thread1bb,128,1); 
+  NumCreated += OS_AddThread(&Thread2bb,128,2);
+	
+	OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes
 }
 
@@ -500,7 +539,8 @@ void Thread4c(void){ int i;
 void BackgroundThread5c(void){   // called when Select button pushed
   NumCreated += OS_AddThread(&Thread4c,128,3); 
 }
-      
+ 
+
 int Testmain3(void){   // Testmain3
   Count4 = 0;          
   OS_Init();           // initialize, disable interrupts

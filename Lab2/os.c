@@ -87,7 +87,7 @@ int32_t Stacks[NUMTHREADS][STACKSIZE];
 
 int i;
 
-int available[NUMTHREADS] = {1};
+int available[NUMTHREADS] = {1, 1, 1};
 
 int add_thread() {
     int ret;
@@ -101,26 +101,35 @@ int add_thread() {
     return -1;
 }
 
+int delete_thread(int thread) {
+    if (available[thread]) {
+        return -1;
+        // Cannot release thread which is already available
+    }
+    available[thread] = 1;
+		return 0;
+}
+
 int find_prev(int thread) {
     int ret;
-    for (i = thread - 1; i != thread; i = (i+NUMTHREADS-1)%NUMTHREADS ) {
+    for (i = (thread+NUMTHREADS-1)%NUMTHREADS; i != thread; i = (i+NUMTHREADS-1)%NUMTHREADS ) {
         if (!available[i]) {
             ret = i;
             return ret;
         }
     }
-		return -1;
+    return -1;
 }
 
 int find_next(int thread) {
     int ret;
-    for (i = thread + 1; i != thread; i = (i+1)%NUMTHREADS ) {
+    for (i = (thread+1)%NUMTHREADS; i != thread; i = (i+1)%NUMTHREADS ) {
         if (!available[i]) {
             ret = i;
             return ret;
         }
     }
-		return -1;
+    return -1;
 }
 
 void SetInitialStack(int i){
@@ -255,17 +264,20 @@ void OS_bSignal(Sema4Type *semaPt) {
 // stack size must be divisable by 8 (aligned to double word boundary)
 // In Lab 2, you can ignore both the stackSize and priority fields
 // In Lab 3, you can ignore the stackSize fields
+static uint32_t NumThreads = 0;
 int OS_AddThread(void(*task)(void), 
    unsigned long stackSize, unsigned long priority) {		 
 	int32_t status, thread;
-	static uint32_t NumThreads = 0; 
+	 
 		
   status = StartCritical();
-	if(NumThreads == 0) {		
+	if(NumThreads == 0) {
+		add_thread();
 		tcbs[0].next = &tcbs[0]; // 0 points to 0
 		RunPt = &tcbs[0];     // thread 0 will run first
 	}
 	else {
+		NumThreads++;
 		thread = add_thread();
 		tcbs[find_prev(thread)].next = &tcbs[thread];
 		tcbs[thread].next = &tcbs[find_next(thread)];
@@ -391,11 +403,14 @@ void OS_Sleep(unsigned long sleepTime) {
 // input:  none
 // output: none
 void OS_Kill(void) { 
-	uint32_t thread;
+	uint32_t thread, next, prev;
 	thread = RunPt->id;
-	
-	find_next(thread)
-	find_prev(thread)
+	next = find_next(thread);
+	prev = find_prev(thread);
+	delete_thread(thread);
+	NumThreads--;
+	tcbs[prev].next = &tcbs[next];
+	NVIC_INT_CTRL_R = 0x10000000;		// trigger PendSV
 } 
 
 // ******** OS_Suspend ************
