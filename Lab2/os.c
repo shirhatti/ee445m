@@ -69,7 +69,7 @@ int32_t StartCritical(void);
 void EndCritical(int32_t primask);
 void StartOS(void);
 
-#define NUMTHREADS  3        // maximum number of threads
+#define NUMTHREADS  5        // maximum number of threads
 #define STACKSIZE   100      // number of 32-bit words in stack
 struct tcb{
   int32_t *sp;       // pointer to stack (valid for threads not running
@@ -85,9 +85,15 @@ tcbType tcbs[NUMTHREADS];
 tcbType *RunPt;
 int32_t Stacks[NUMTHREADS][STACKSIZE];
 
-int i;
+static int i;
 
-int available[NUMTHREADS] = {1, 1, 1};
+int available[NUMTHREADS];
+
+void InitAvailable(void) {
+	for (i = 0; i < NUMTHREADS; i++) {
+		available[i] = 1;
+	}
+}
 
 int add_thread() {
     int ret;
@@ -170,6 +176,7 @@ int OSAddThreads(void(*task0)(void),
   return 1;               // successful
 }
 
+static uint32_t SystemTime;
 // ******** OS_Init ************
 // initialize operating system, disable interrupts until OS_Launch
 // initialize OS controlled I/O: serial, ADC, systick, LaunchPad I/O and timers 
@@ -178,6 +185,8 @@ int OSAddThreads(void(*task0)(void),
 void OS_Init(void) {
 	OS_DisableInterrupts();
   PLL_Init();                 // set processor clock to 50 MHz
+	InitAvailable();
+	SystemTime = 0;
 
   NVIC_ST_CTRL_R = 0;         // disable SysTick during setup
   NVIC_ST_CURRENT_R = 0;      // any write to current clears it
@@ -187,7 +196,6 @@ void OS_Init(void) {
 	// Use PendSV to trigger a context switch
 	NVIC_SYS_PRI3_R =(NVIC_SYS_PRI3_R&0xFF00FFFF)|0x00D00000; // priority 6	
 }
-
 
 // ******** OS_InitSemaphore ************
 // initialize semaphore 
@@ -269,7 +277,6 @@ int OS_AddThread(void(*task)(void),
    unsigned long stackSize, unsigned long priority) {		 
 	int32_t status, thread;
 	 
-		
   status = StartCritical();
 	if(NumThreads == 0) {
 		add_thread();
@@ -301,24 +308,27 @@ int OS_AddThread(void(*task)(void),
 // Inputs: none
 // Outputs: Thread ID, number greater than zero 
 unsigned long OS_Id(void) { 
+	return RunPt->id;
 }
 
-void InitTimer1A(void) {
+void (*PeriodicTask)(void);
+
+void InitTimer1A(uint32_t period) {
 	long sr;
 	volatile unsigned long delay;
- // if(priority > 5) { return; }
 	
 	sr = StartCritical();
   SYSCTL_RCGCTIMER_R |= 0x02;
+	
   delay = SYSCTL_RCGCTIMER_R;
 	delay = SYSCTL_RCGCTIMER_R;
- // PeriodicTask = task;
+	
   TIMER1_CTL_R &= ~TIMER_CTL_TAEN; // 1) disable timer1A during setup
                                    // 2) configure for 32-bit timer mode
   TIMER1_CFG_R = TIMER_CFG_32_BIT_TIMER;
                                    // 3) configure for periodic mode, default down-count settings
   TIMER1_TAMR_R = TIMER_TAMR_TAMR_PERIOD;
-  TIMER1_TAILR_R = 80000 - 1;     // 4) reload value
+  TIMER1_TAILR_R = period - 1;     // 4) reload value
                                    // 5) clear timer1A timeout flag
   TIMER1_ICR_R = TIMER_ICR_TATOCINT;
   TIMER1_IMR_R |= TIMER_IMR_TATOIM;// 6) arm timeout interrupt
@@ -333,8 +343,7 @@ void InitTimer1A(void) {
 
 void Timer1A_Handler(void){ 
   TIMER1_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer1A timeout
- // SystemTime++;
-  RunPt->sleepCt -= 1;
+	(*PeriodicTask)();
 }
 //******** OS_AddPeriodicThread *************** 
 // add a background periodic task
@@ -355,6 +364,8 @@ void Timer1A_Handler(void){
 //           determines the relative priority of these four threads
 int OS_AddPeriodicThread(void(*task)(void), 
    unsigned long period, unsigned long priority) { 
+	PeriodicTask = task;
+	InitTimer1A(period);
 }
 
 //******** OS_AddSW1Task *************** 
@@ -396,6 +407,7 @@ int OS_AddSW2Task(void(*task)(void), unsigned long priority) {
 // You are free to select the time resolution for this function
 // OS_Sleep(0) implements cooperative multitasking
 void OS_Sleep(unsigned long sleepTime) { 
+	RunPt->sleepCt = sleepTime*TIME_1MS;
 } 
 
 // ******** OS_Kill ************
@@ -503,6 +515,7 @@ unsigned long OS_MailBox_Recv(void) {
 // It is ok to change the resolution and precision of this function as long as 
 //   this function and OS_TimeDifference have the same resolution and precision 
 unsigned long OS_Time(void) { 
+	return SystemTime;
 }
 
 // ******** OS_TimeDifference ************
@@ -513,6 +526,7 @@ unsigned long OS_Time(void) {
 // It is ok to change the resolution and precision of this function as long as 
 //   this function and OS_Time have the same resolution and precision 
 unsigned long OS_TimeDifference(unsigned long start, unsigned long stop) { 
+	return (stop-start);
 }
 
 // ******** OS_ClearMsTime ************
@@ -520,7 +534,8 @@ unsigned long OS_TimeDifference(unsigned long start, unsigned long stop) {
 // Inputs:  none
 // Outputs: none
 // You are free to change how this works
-void OS_ClearMsTime(void) { 
+void OS_ClearMsTime(void) {
+	SystemTime = 0;
 }
 
 // ******** OS_MsTime ************
@@ -529,7 +544,8 @@ void OS_ClearMsTime(void) {
 // Outputs: time in ms units
 // You are free to select the time resolution for this function
 // It is ok to make the resolution to match the first call to OS_AddPeriodicThread
-unsigned long OS_MsTime(void) { 
+unsigned long OS_MsTime(void) {
+  return SystemTime/80000;	
 }
 
 //******** OS_Launch *************** 

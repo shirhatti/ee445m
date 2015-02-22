@@ -27,7 +27,7 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 // PD3 Ain3 sampled at 2k, sequencer 3, by DAS software start in ISR
 // PD2 Ain5 sampled at 250Hz, sequencer 0, by Producer, timer tigger
 
-// #define LAB2_2 
+ #define LAB2_2 
 // #define LAB3
 
 #include "OS.h"
@@ -37,8 +37,9 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 #ifdef LAB2_2
 
 #include "ST7735.h"
-#include "ADC.h"
-#include "UART2.h"
+#include "ADCT0ATrigger.h"
+#include "UART.h"
+#include "cmdline.h"
 
 #endif
 
@@ -73,6 +74,7 @@ unsigned long JitterHistogram[JITTERSIZE]={0,};
 int Testmain1(void);
 int Testmain2(void);
 int Testmain2b(void);
+int Testmain3(void);
 
 int main(void) {
 //	#ifdef MAIN1
@@ -80,7 +82,7 @@ int main(void) {
 //	#else
 //	Testmain2();
 //	#endif
-	Testmain2b();
+	Testmain3();
 }
 
 void PortE_Init(void){ 
@@ -321,9 +323,32 @@ void Interpreter(void);    // just a prototype, link to your interpreter
 // 2) print debugging parameters 
 //    i.e., x[], y[] 
 //--------------end of Task 5-----------------------------
-
+#define GPIO_PORTF2             (*((volatile uint32_t *)0x40025010))
+	
+void Interpreter(void) {
+	char string[80];  // global to assist in debugging
+	Output_Init();
+  UART_Init();              // initialize UART
+	
+	SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOF; // activate port F
+	GPIO_PORTF_DIR_R |= 0x04;             // make PF2 out (built-in LED)
+  GPIO_PORTF_AFSEL_R &= ~0x04;          // disable alt funct on PF2
+  GPIO_PORTF_DEN_R |= 0x04;             // enable digital I/O on PF2
+                                        // configure PF2 as GPIO
+  GPIO_PORTF_PCTL_R = (GPIO_PORTF_PCTL_R&0xFFFFF0FF)+0x00000000;
+  GPIO_PORTF_AMSEL_R = 0;               // disable analog functionality on PF
+  GPIO_PORTF2 = 0;                      // turn off LED	
+	
+  while(1){
+    OutCRLF(); UART_OutString(">");
+    UART_InString(string,79);
+		if(CmdLineProcess(string) == -1) {
+			UART_OutString("command not recognized");
+		}
+  }
+}
 //*******************final user main DEMONTRATE THIS TO TA**********
-int main(void){ 
+int main1(void){ 
   OS_Init();           // initialize, disable interrupts
   PortE_Init();
   DataLost = 0;        // lost data between producer and consumer
@@ -515,7 +540,7 @@ void Thread2c(void){
   Count2 = 0;    
   Count5 = 0;    // Count2 + Count5 should equal Count1  
   NumCreated += OS_AddThread(&Thread5c,128,3); 
-//  OS_AddPeriodicThread(&BackgroundThread1c,TIME_1MS,0); 
+  OS_AddPeriodicThread(&BackgroundThread1c,TIME_1MS,0); 
   for(;;){
     OS_Wait(&Readyc);
     Count2++;   // Count2 + Count5 should equal Count1
@@ -539,7 +564,6 @@ void Thread4c(void){ int i;
 void BackgroundThread5c(void){   // called when Select button pushed
   NumCreated += OS_AddThread(&Thread4c,128,3); 
 }
- 
 
 int Testmain3(void){   // Testmain3
   Count4 = 0;          
