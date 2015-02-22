@@ -71,11 +71,12 @@ void StartOS(void);
 
 #define NUMTHREADS  5        // maximum number of threads
 #define STACKSIZE   100      // number of 32-bit words in stack
+#define OSFIFOSIZE 16
 struct tcb{
   int32_t *sp;       // pointer to stack (valid for threads not running
   struct tcb *next;  // linked-list pointer
   int32_t *status;   // pointer to resource thread is blocked on (0 if not)
-  uint32_t sleepCt;	 // sleep counter
+  uint32_t sleepCt;	 // sleep counter in MS
   uint32_t age;      // how long the thread has been active
   uint32_t id;       // thread #
   uint32_t priority; // used in priority scheduling
@@ -366,6 +367,62 @@ int OS_AddPeriodicThread(void(*task)(void),
    unsigned long period, unsigned long priority) { 
 	PeriodicTask = task;
 	InitTimer1A(period);
+		 
+  return 1;
+}
+
+// SWITCHES HAVE NOT BEEN DEBOUNCED
+void (*SWOneTask)(void);
+void SWOneInit(void){
+  unsigned long volatile delay;
+  SYSCTL_RCGCGPIO_R |= 0x00000020; // (a) activate clock for port F
+  delay = SYSCTL_RCGCGPIO_R;
+  GPIO_PORTF_CR_R = 0x10;         // allow changes to PF4,0
+  GPIO_PORTF_DIR_R &= ~0x10;    // (c) make PF4,0 in (built-in button)
+  GPIO_PORTF_AFSEL_R &= ~0x10;  //     disable alt funct on PF4,0
+  GPIO_PORTF_DEN_R |= 0x10;     //     enable digital I/O on PF4,0
+  GPIO_PORTF_PCTL_R &= ~0x000F000F; //  configure PF4,0 as GPIO
+  GPIO_PORTF_AMSEL_R &= ~0x10;  //     disable analog functionality on PF4,0
+  GPIO_PORTF_PUR_R |= 0x10;     //     enable weak pull-up on PF4,0
+  GPIO_PORTF_IS_R &= ~0x10;     // (d) PF4,PF0 is edge-sensitive
+  GPIO_PORTF_IBE_R &= ~0x10;    //     PF4,PF0 is not both edges
+  GPIO_PORTF_IEV_R &= ~0x10;    //     PF4,PF0 falling edge event
+  GPIO_PORTF_ICR_R = 0x10;      // (e) clear flags 4,0
+  GPIO_PORTF_IM_R |= 0x10;      // (f) arm interrupt on PF4,PF0
+  NVIC_PRI7_R = (NVIC_PRI7_R&0xFF00FFFF)|0x00400000; // (g) priority 2
+  NVIC_EN0_R = 0x40000000;      // (h) enable interrupt 30 in NVIC
+}
+
+void (*SWTwoTask)(void);
+void SWTwoInit(void){
+  unsigned long volatile delay;
+  SYSCTL_RCGCGPIO_R |= 0x00000020; // (a) activate clock for port F
+  delay = SYSCTL_RCGCGPIO_R;
+  GPIO_PORTF_LOCK_R = 0x4C4F434B; // unlock GPIO Port F
+  GPIO_PORTF_CR_R = 0x01;         // allow changes to PF4,0
+  GPIO_PORTF_DIR_R &= ~0x01;    // (c) make PF4,0 in (built-in button)
+  GPIO_PORTF_AFSEL_R &= ~0x01;  //     disable alt funct on PF4,0
+  GPIO_PORTF_DEN_R |= 0x01;     //     enable digital I/O on PF4,0
+  GPIO_PORTF_PCTL_R &= ~0x000F000F; //  configure PF4,0 as GPIO
+  GPIO_PORTF_AMSEL_R &= ~0x01;  //     disable analog functionality on PF4,0
+  GPIO_PORTF_PUR_R |= 0x01;     //     enable weak pull-up on PF4,0
+  GPIO_PORTF_IS_R &= ~0x01;     // (d) PF4,PF0 is edge-sensitive
+  GPIO_PORTF_IBE_R &= ~0x01;    //     PF4,PF0 is not both edges
+  GPIO_PORTF_IEV_R &= ~0x01;    //     PF4,PF0 falling edge event
+  GPIO_PORTF_ICR_R = 0x01;      // (e) clear flags 4,0
+  GPIO_PORTF_IM_R |= 0x01;      // (f) arm interrupt on PF4,PF0
+  NVIC_PRI7_R = (NVIC_PRI7_R&0xFF00FFFF)|0x00400000; // (g) priority 2
+  NVIC_EN0_R = 0x40000000;      // (h) enable interrupt 30 in NVIC
+}
+
+void GPIOPortF_Handler(void) {  // called on touch of either SW1 or SW2
+  if(GPIO_PORTF_RIS_R&0x01) {  	// SW2 touch
+    GPIO_PORTF_ICR_R = 0x01;  	// acknowledge flag0
+  }
+  if(GPIO_PORTF_RIS_R&0x10) {  	// SW1 touch
+    GPIO_PORTF_ICR_R = 0x10;  	// acknowledge flag4
+    (*SWOneTask)();
+  }
 }
 
 //******** OS_AddSW1Task *************** 
@@ -382,6 +439,10 @@ int OS_AddPeriodicThread(void(*task)(void),
 // In lab 3, there will be up to four background threads, and this priority field 
 //           determines the relative priority of these four threads
 int OS_AddSW1Task(void(*task)(void), unsigned long priority) { 
+	SWOneTask = task;
+	SWOneInit();
+	
+	return 1;
 }
 
 //******** OS_AddSW2Task *************** 
@@ -398,6 +459,10 @@ int OS_AddSW1Task(void(*task)(void), unsigned long priority) {
 // In lab 3, there will be up to four background threads, and this priority field 
 //           determines the relative priority of these four threads
 int OS_AddSW2Task(void(*task)(void), unsigned long priority) { 
+	SWTwoTask = task;
+	SWTwoInit();
+	
+	return 1;
 }
 
 // ******** OS_Sleep ************
@@ -407,7 +472,7 @@ int OS_AddSW2Task(void(*task)(void), unsigned long priority) {
 // You are free to select the time resolution for this function
 // OS_Sleep(0) implements cooperative multitasking
 void OS_Sleep(unsigned long sleepTime) { 
-	RunPt->sleepCt = sleepTime*TIME_1MS;
+	RunPt->sleepCt = sleepTime;
 } 
 
 // ******** OS_Kill ************
@@ -440,7 +505,10 @@ void OS_Suspend(void) {
 	NVIC_INT_CTRL_R = 0x10000000;		// trigger PendSV
 #endif
 }
- 
+
+uint16_t static OS_Fifo [OSFIFOSIZE];
+uint16_t *PutPt, *GetPt;
+
 // ******** OS_Fifo_Init ************
 // Initialize the Fifo to be empty
 // Inputs: size
@@ -450,7 +518,11 @@ void OS_Suspend(void) {
 // In Lab 3, you can put whatever restrictions you want on size
 //    e.g., 4 to 64 elements
 //    e.g., must be a power of 2,4,8,16,32,64,128
-void OS_Fifo_Init(unsigned long size) { 
+void OS_Fifo_Init(unsigned long size) {
+  long sr;  
+  sr = StartCritical();                 
+  PutPt = GetPt = &OS_Fifo[0]; 
+  EndCritical(sr); 	
 }
 
 // ******** OS_Fifo_Put ************
@@ -462,6 +534,20 @@ void OS_Fifo_Init(unsigned long size) {
 // Since this is called by interrupt handlers 
 //  this function can not disable or enable interrupts
 int OS_Fifo_Put(unsigned long data) { 
+  uint16_t volatile *nextPutPt; 
+	
+  nextPutPt = PutPt + 1;        
+  if(nextPutPt == &OS_Fifo[OSFIFOSIZE]){ 
+    nextPutPt = &OS_Fifo[0];       
+  }                                     
+  if(nextPutPt == GetPt ){      
+    return(0);                       
+  }                                     
+  else{                                 
+    *( PutPt ) = data;          
+    PutPt = nextPutPt;          
+    return(1); 
+	}		
 }  
 
 // ******** OS_Fifo_Get ************
@@ -470,6 +556,18 @@ int OS_Fifo_Put(unsigned long data) {
 // Inputs:  none
 // Outputs: data 
 unsigned long OS_Fifo_Get(void) { 
+	uint16_t data;
+	
+	if( PutPt == GetPt ){ 
+    return(0);                       
+  }                                     
+  
+	data = *( GetPt++);    
+  if( GetPt == &OS_Fifo[OSFIFOSIZE]){ 
+    GetPt = &OS_Fifo[0];   
+  }                                     
+  
+	return(data); 
 }
 
 // ******** OS_Fifo_Size ************
@@ -480,6 +578,10 @@ unsigned long OS_Fifo_Get(void) {
 //          zero or less than zero if the Fifo is empty 
 //          zero or less than zero if a call to OS_Fifo_Get will spin or block
 long OS_Fifo_Size(void) { 
+	if( PutPt < GetPt ){  
+		return ((unsigned short)( PutPt - GetPt + (OSFIFOSIZE*sizeof(uint16_t)))/sizeof(uint16_t)); 
+  }                                     
+  return ((unsigned short)( PutPt - GetPt )/sizeof(uint16_t)); 
 }
 
 // ******** OS_MailBox_Init ************
@@ -565,5 +667,23 @@ void OS_Launch(unsigned long theTimeSlice) {
 }
 
 void SysTick_Handler(void) {
+	static int CountMS = TIME_1MS;
+	
+	if(CountMS <= 0) {
+		CountMS--;
+	}
+	else {
+		for(i = 0; i < NUMTHREADS; i++) {
+			if(!available[i] && tcbs[i].sleepCt) {
+				tcbs[i].sleepCt -= 1;
+			}
+		}
+		CountMS = TIME_1MS;
+	}
+	
+	while(RunPt->sleepCt) {
+		RunPt = RunPt->next;
+	}
+	
   NVIC_INT_CTRL_R = 0x10000000;		// trigger PendSV
 }

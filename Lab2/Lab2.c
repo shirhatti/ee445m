@@ -75,6 +75,7 @@ int Testmain1(void);
 int Testmain2(void);
 int Testmain2b(void);
 int Testmain3(void);
+int Testmain4(void);
 
 int main(void) {
 //	#ifdef MAIN1
@@ -82,7 +83,7 @@ int main(void) {
 //	#else
 //	Testmain2();
 //	#endif
-	Testmain3();
+	Testmain4();
 }
 
 void PortE_Init(void){ 
@@ -570,7 +571,7 @@ int Testmain3(void){   // Testmain3
   OS_Init();           // initialize, disable interrupts
 // Count2 + Count5 should equal Count1
   NumCreated = 0 ;
-//  OS_AddSW1Task(&BackgroundThread5c,2);
+  OS_AddSW1Task(&BackgroundThread5c,2);
   NumCreated += OS_AddThread(&Thread2c,128,2); 
   NumCreated += OS_AddThread(&Thread3c,128,3); 
   NumCreated += OS_AddThread(&Thread4c,128,3); 
@@ -632,7 +633,8 @@ int Testmain4(void){   // Testmain4
   NumCreated = 0 ;
   OS_AddPeriodicThread(&BackgroundThread1d,PERIOD,0); 
   OS_AddSW1Task(&BackgroundThread5d,2);
-  NumCreated += OS_AddThread(&Thread2d,128,2); 
+  NumCreated += OS_AddThread(&Interpreter,128,2);
+	//NumCreated += OS_AddThread(&Thread2d,128,2); 
   NumCreated += OS_AddThread(&Thread3d,128,3); 
   NumCreated += OS_AddThread(&Thread4d,128,3); 
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
