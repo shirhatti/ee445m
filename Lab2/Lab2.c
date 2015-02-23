@@ -76,14 +76,15 @@ int Testmain2(void);
 int Testmain2b(void);
 int Testmain3(void);
 int Testmain4(void);
-
+int main1(void);
 int main(void) {
 //	#ifdef MAIN1
 //	Testmain1();
 //	#else
 //	Testmain2();
 //	#endif
-	Testmain4();
+//	Testmain4();
+	main1();
 }
 
 void PortE_Init(void){ 
@@ -342,7 +343,7 @@ void Interpreter(void) {
 	
   while(1){
     OutCRLF(); UART_OutString(">");
-    UART_InString(string,79);
+ //   UART_InString(string,79);
 		if(CmdLineProcess(string) == -1) {
 			UART_OutString("command not recognized");
 		}
@@ -633,8 +634,8 @@ int Testmain4(void){   // Testmain4
   NumCreated = 0 ;
   OS_AddPeriodicThread(&BackgroundThread1d,PERIOD,0); 
   OS_AddSW1Task(&BackgroundThread5d,2);
-  NumCreated += OS_AddThread(&Interpreter,128,2);
-	//NumCreated += OS_AddThread(&Thread2d,128,2); 
+//  NumCreated += OS_AddThread(&Interpreter,128,2);
+	NumCreated += OS_AddThread(&Thread2d,128,2); 
   NumCreated += OS_AddThread(&Thread3d,128,3); 
   NumCreated += OS_AddThread(&Thread4d,128,3); 
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here

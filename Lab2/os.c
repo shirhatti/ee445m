@@ -69,9 +69,9 @@ int32_t StartCritical(void);
 void EndCritical(int32_t primask);
 void StartOS(void);
 
-#define NUMTHREADS  5        // maximum number of threads
+#define NUMTHREADS  10        // maximum number of threads
 #define STACKSIZE   100      // number of 32-bit words in stack
-#define OSFIFOSIZE 16
+#define OSFIFOSIZE  16
 struct tcb{
   int32_t *sp;       // pointer to stack (valid for threads not running
   struct tcb *next;  // linked-list pointer
@@ -371,7 +371,8 @@ int OS_AddPeriodicThread(void(*task)(void),
   return 1;
 }
 
-// SWITCHES HAVE NOT BEEN DEBOUNCED
+uint32_t LastPF4, LastPF0;
+
 void (*SWOneTask)(void);
 void SWOneInit(void){
   unsigned long volatile delay;
@@ -389,6 +390,9 @@ void SWOneInit(void){
   GPIO_PORTF_IEV_R &= ~0x10;    //     PF4,PF0 falling edge event
   GPIO_PORTF_ICR_R = 0x10;      // (e) clear flags 4,0
   GPIO_PORTF_IM_R |= 0x10;      // (f) arm interrupt on PF4,PF0
+
+  LastPF4 = GPIO_PORTF_DATA_R & 0x10;
+
   NVIC_PRI7_R = (NVIC_PRI7_R&0xFF00FFFF)|0x00400000; // (g) priority 2
   NVIC_EN0_R = 0x40000000;      // (h) enable interrupt 30 in NVIC
 }
@@ -411,17 +415,43 @@ void SWTwoInit(void){
   GPIO_PORTF_IEV_R &= ~0x01;    //     PF4,PF0 falling edge event
   GPIO_PORTF_ICR_R = 0x01;      // (e) clear flags 4,0
   GPIO_PORTF_IM_R |= 0x01;      // (f) arm interrupt on PF4,PF0
+
+  LastPF0 = GPIO_PORTF_DATA_R & 0x01;
+
   NVIC_PRI7_R = (NVIC_PRI7_R&0xFF00FFFF)|0x00400000; // (g) priority 2
   NVIC_EN0_R = 0x40000000;      // (h) enable interrupt 30 in NVIC
 }
 
+
+void static DebouncePF4(void) {
+  OS_Sleep(2);      //foreground sleep, must run within 5ms
+  LastPF4 = GPIO_PORTF_DATA_R & 0x10;
+  GPIO_PORTF_ICR_R = 0x10;
+  GPIO_PORTF_IM_R |= 0x10;
+  OS_Kill(); 
+}
+
+void static DebouncePF0(void) {
+  OS_Sleep(2);      //foreground sleep, must run within 5ms
+  LastPF0 = GPIO_PORTF_DATA_R & 0x01;
+  GPIO_PORTF_ICR_R = 0x01;
+  GPIO_PORTF_IM_R |= 0x01;
+  OS_Kill(); 
+
+}
+
 void GPIOPortF_Handler(void) {  // called on touch of either SW1 or SW2
-  if(GPIO_PORTF_RIS_R&0x01) {  	// SW2 touch
-    GPIO_PORTF_ICR_R = 0x01;  	// acknowledge flag0
+  if(GPIO_PORTF_RIS_R&0x01) {   // SW2 touch
+    if (LastPF0) {
+      //(*SWTwoTask)();
+    }
+    GPIO_PORTF_IM_R &= ~0x01;
+    OS_AddThread(&DebouncePF0, 128, 2);
   }
-  if(GPIO_PORTF_RIS_R&0x10) {  	// SW1 touch
-    GPIO_PORTF_ICR_R = 0x10;  	// acknowledge flag4
-    (*SWOneTask)();
+  if(GPIO_PORTF_RIS_R&0x10) {   // SW1 touch
+		if (LastPF4) { (*SWOneTask)(); }
+    GPIO_PORTF_IM_R &= ~0x10;
+    OS_AddThread(&DebouncePF4, 128 ,2);
   }
 }
 
@@ -584,11 +614,14 @@ long OS_Fifo_Size(void) {
   return ((unsigned short)( PutPt - GetPt )/sizeof(uint16_t)); 
 }
 
+static Sema4Type MailReady;
+static uint32_t MailBox;
 // ******** OS_MailBox_Init ************
 // Initialize communication channel
 // Inputs:  none
 // Outputs: none
 void OS_MailBox_Init(void) { 
+	OS_InitSemaphore(&MailReady, 0);
 }
 
 // ******** OS_MailBox_Send ************
@@ -597,7 +630,9 @@ void OS_MailBox_Init(void) {
 // Outputs: none
 // This function will be called from a foreground thread
 // It will spin/block if the MailBox contains data not yet received 
-void OS_MailBox_Send(unsigned long data) { 
+void OS_MailBox_Send(unsigned long data) {
+	MailBox = data;
+	OS_bSignal(&MailReady);
 }
 
 // ******** OS_MailBox_Recv ************
@@ -607,6 +642,8 @@ void OS_MailBox_Send(unsigned long data) {
 // This function will be called from a foreground thread
 // It will spin/block if the MailBox is empty 
 unsigned long OS_MailBox_Recv(void) { 
+	OS_bWait(&MailReady);
+	return MailBox;
 }
 
 // ******** OS_Time ************
