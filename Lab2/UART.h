@@ -26,6 +26,9 @@
 // U0Rx (VCP receive) connected to PA0
 // U0Tx (VCP transmit) connected to PA1
 
+#ifndef _UARTH_
+#define _UARTH_
+
 // standard ASCII symbols
 #define CR   0x0D
 #define LF   0x0A
@@ -114,3 +117,5 @@ void UART_InString(char *bufPt, uint16_t max);
 // Input: none
 // Output: none
 void OutCRLF(void);
+
+#endif

@@ -276,7 +276,7 @@ void OS_bSignal(Sema4Type *semaPt) {
 static uint32_t NumThreads = 0;
 int OS_AddThread(void(*task)(void), 
    unsigned long stackSize, unsigned long priority) {		 
-	int32_t status, thread;
+	int32_t status, thread, prev;
 	 
   status = StartCritical();
 	if(NumThreads == 0) {
@@ -285,10 +285,13 @@ int OS_AddThread(void(*task)(void),
 		RunPt = &tcbs[0];     // thread 0 will run first
 	}
 	else {
-		NumThreads++;
+//		NumThreads++;
 		thread = add_thread();
-		tcbs[find_prev(thread)].next = &tcbs[thread];
-		tcbs[thread].next = &tcbs[find_next(thread)];
+		prev = find_prev(thread);
+		tcbs[thread].next = tcbs[prev].next;
+		tcbs[prev].next = &tcbs[thread];
+//		tcbs[find_prev(thread)].next = &tcbs[thread];
+//		tcbs[thread].next = &tcbs[find_next(thread)];
 	}
 	
 	tcbs[thread].status = 0;
@@ -334,7 +337,7 @@ void InitTimer1A(uint32_t period) {
   TIMER1_ICR_R = TIMER_ICR_TATOCINT;
   TIMER1_IMR_R |= TIMER_IMR_TATOIM;// 6) arm timeout interrupt
 								   // 7) priority shifted to bits 15-13 for timer1A
-  NVIC_PRI5_R = (NVIC_PRI5_R&0xFFFF00FF)|(1 << 13);	
+  NVIC_PRI5_R = (NVIC_PRI5_R&0xFFFF00FF)|(6 << 13);	
   NVIC_EN0_R = NVIC_EN0_INT21;     // 8) enable interrupt 21 in NVIC
   TIMER1_TAPR_R = 0;
   TIMER1_CTL_R |= TIMER_CTL_TAEN;  // 9) enable timer1A
@@ -437,7 +440,6 @@ void static DebouncePF0(void) {
   GPIO_PORTF_ICR_R = 0x01;
   GPIO_PORTF_IM_R |= 0x01;
   OS_Kill(); 
-
 }
 
 void GPIOPortF_Handler(void) {  // called on touch of either SW1 or SW2
@@ -538,6 +540,8 @@ void OS_Suspend(void) {
 
 uint16_t static OS_Fifo [OSFIFOSIZE];
 uint16_t *PutPt, *GetPt;
+Sema4Type FifoAvailable;
+//Sema4Type DataRoomLeft;
 
 // ******** OS_Fifo_Init ************
 // Initialize the Fifo to be empty
@@ -550,7 +554,11 @@ uint16_t *PutPt, *GetPt;
 //    e.g., must be a power of 2,4,8,16,32,64,128
 void OS_Fifo_Init(unsigned long size) {
   long sr;  
-  sr = StartCritical();                 
+  sr = StartCritical();        
+	
+	OS_InitSemaphore(&FifoAvailable, 0);
+	//OS_InitSemaphore(&DataRoomLeft, OSFIFOSIZE);
+		
   PutPt = GetPt = &OS_Fifo[0]; 
   EndCritical(sr); 	
 }
@@ -575,7 +583,8 @@ int OS_Fifo_Put(unsigned long data) {
   }                                     
   else{                                 
     *( PutPt ) = data;          
-    PutPt = nextPutPt;          
+    PutPt = nextPutPt; 
+		OS_Signal(&FifoAvailable);
     return(1); 
 	}		
 }  
@@ -588,6 +597,8 @@ int OS_Fifo_Put(unsigned long data) {
 unsigned long OS_Fifo_Get(void) { 
 	uint16_t data;
 	
+	// ERROR CHECKING
+	OS_Wait(&FifoAvailable);
 	if( PutPt == GetPt ){ 
     return(0);                       
   }                                     
@@ -614,14 +625,17 @@ long OS_Fifo_Size(void) {
   return ((unsigned short)( PutPt - GetPt )/sizeof(uint16_t)); 
 }
 
-static Sema4Type MailReady;
+/*FOLLOW GUIDELINES IN LAB MANUAL*/
+static Sema4Type DataValid;
+static Sema4Type BoxFree;
 static uint32_t MailBox;
 // ******** OS_MailBox_Init ************
 // Initialize communication channel
 // Inputs:  none
 // Outputs: none
 void OS_MailBox_Init(void) { 
-	OS_InitSemaphore(&MailReady, 0);
+	OS_InitSemaphore(&DataValid, 0);
+	OS_InitSemaphore(&BoxFree, 1);
 }
 
 // ******** OS_MailBox_Send ************
@@ -631,8 +645,9 @@ void OS_MailBox_Init(void) {
 // This function will be called from a foreground thread
 // It will spin/block if the MailBox contains data not yet received 
 void OS_MailBox_Send(unsigned long data) {
+	OS_bSignal(&BoxFree);
 	MailBox = data;
-	OS_bSignal(&MailReady);
+	OS_bSignal(&DataValid);
 }
 
 // ******** OS_MailBox_Recv ************
@@ -642,8 +657,13 @@ void OS_MailBox_Send(unsigned long data) {
 // This function will be called from a foreground thread
 // It will spin/block if the MailBox is empty 
 unsigned long OS_MailBox_Recv(void) { 
-	OS_bWait(&MailReady);
-	return MailBox;
+	uint32_t retVal;
+	
+	OS_bWait(&DataValid);
+	retVal = MailBox;
+	OS_bSignal(&BoxFree);
+	
+	return retVal;
 }
 
 // ******** OS_Time ************
@@ -722,5 +742,6 @@ void SysTick_Handler(void) {
 		RunPt = RunPt->next;
 	}
 	
+	SystemTime++;
   NVIC_INT_CTRL_R = 0x10000000;		// trigger PendSV
 }

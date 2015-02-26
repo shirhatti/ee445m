@@ -30,7 +30,7 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
  #define LAB2_2 
 // #define LAB3
 
-#include "OS.h"
+#include "os.h"
 #include "inc/tm4c123gh6pm.h"
 #include <string.h> 
 
@@ -343,7 +343,7 @@ void Interpreter(void) {
 	
   while(1){
     OutCRLF(); UART_OutString(">");
- //   UART_InString(string,79);
+    UART_InString(string,79);
 		if(CmdLineProcess(string) == -1) {
 			UART_OutString("command not recognized");
 		}
@@ -501,7 +501,6 @@ void Thread2bb(void){
     OS_Suspend();      // cooperative multitasking
   }
 }
-
 
 int Testmain2b(void) {
 	OS_Init();

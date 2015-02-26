@@ -27,6 +27,7 @@
 
 #include "FIFO.h"
 #include "os.h"
+#include "UART_FIFO.h"
 
 // Two-index implementation of the transmit FIFO
 // can hold 0 to TXFIFOSIZE elements
@@ -34,48 +35,48 @@
 #define TXFIFOSUCCESS 1
 #define TXFIFOFAIL    0
 
-typedef char txDataType;
-unsigned long volatile TxPutI;// put next
-unsigned long volatile TxGetI;// get next
-txDataType static TxFifo[TXFIFOSIZE];
 
-Sema4Type TxRoomType;
+unsigned long volatile Tx_UARTPutI;// put next
+unsigned long volatile Tx_UARTGetI;// get next
+tx_UARTDataType static Tx_UARTFifo[TXFIFOSIZE];
+
+Sema4Type Tx_UARTRoomType;
 	
 // initialize index FIFO
-void TxFifo_Init(void){ long sr;
+void Tx_UARTFifo_Init(void){ long sr;
   sr = StartCritical(); // make atomic
-	OS_InitSemaphore(&TxRoomType, TXFIFOSIZE);
-  TxPutI = TxGetI = 0;  // Empty
+  OS_InitSemaphore(&Tx_UARTRoomType, TXFIFOSIZE);
+  Tx_UARTPutI = Tx_UARTGetI = 0;  // Empty
   EndCritical(sr);
 }
 // add element to end of index FIFO
 // return TXFIFOSUCCESS if successful
-int TxFifo_Put(txDataType data){
-  OS_Wait(&TxRoomType);
+int Tx_UARTFifo_Put(tx_UARTDataType data){
+  OS_Wait(&Tx_UARTRoomType);
 	
-	if((TxPutI-TxGetI) & ~(TXFIFOSIZE-1)){
+	if((Tx_UARTPutI-Tx_UARTGetI) & ~(TXFIFOSIZE-1)){
     return(TXFIFOFAIL); // Failed, fifo full
   }
-  TxFifo[TxPutI&(TXFIFOSIZE-1)] = data; // put
-  TxPutI++;  // Success, update
+  Tx_UARTFifo[Tx_UARTPutI&(TXFIFOSIZE-1)] = data; // put
+  Tx_UARTPutI++;  // Success, update
   return(TXFIFOSUCCESS);
 }
 // remove element from front of index FIFO
 // return TXFIFOSUCCESS if successful
-int TxFifo_Get(txDataType *datapt){
-  if(TxPutI == TxGetI ){
+int Tx_UARTFifo_Get(tx_UARTDataType *datapt){
+  if(Tx_UARTPutI == Tx_UARTGetI ){
     return(TXFIFOFAIL); // Empty if TxPutI=TxGetI
   }
-  *datapt = TxFifo[TxGetI&(TXFIFOSIZE-1)];
-  TxGetI++;  // Success, update
-	OS_Signal(&TxRoomType);
+  *datapt = Tx_UARTFifo[Tx_UARTGetI&(TXFIFOSIZE-1)];
+  Tx_UARTGetI++;  // Success, update
+  OS_Signal(&Tx_UARTRoomType);
 	
   return(TXFIFOSUCCESS);
 }
 // number of elements in index FIFO
 // 0 to TXFIFOSIZE-1
-unsigned short TxFifo_Size(void){
- return ((unsigned short)(TxPutI-TxGetI));
+unsigned short Tx_UARTFifo_Size(void){
+ return ((unsigned short)(Tx_UARTPutI-Tx_UARTGetI));
 }
 
 // Two-pointer implementation of the receive FIFO
@@ -84,57 +85,56 @@ unsigned short TxFifo_Size(void){
 #define RXFIFOSUCCESS 1
 #define RXFIFOFAIL    0
 
-typedef char rxDataType;
-rxDataType volatile *RxPutPt; // put next
-rxDataType volatile *RxGetPt; // get next
-rxDataType static RxFifo[RXFIFOSIZE];
+rx_UARTDataType volatile *Rx_UARTPutPt; // put next
+rx_UARTDataType volatile *Rx_UARTGetPt; // get next
+rx_UARTDataType static Rx_UARTFifo[RXFIFOSIZE];
 
-Sema4Type RxDataAvailable;
+Sema4Type Rx_UARTDataAvailable;
 
 // initialize pointer FIFO
-void RxFifo_Init(void){ long sr;
+void Rx_UARTFifo_Init(void){ long sr;
   sr = StartCritical();      // make atomic
-	OS_InitSemaphore(&RxDataAvailable, 0);
-  RxPutPt = RxGetPt = &RxFifo[0]; // Empty
+  OS_InitSemaphore(&Rx_UARTDataAvailable, 0);
+  Rx_UARTPutPt = Rx_UARTGetPt = &Rx_UARTFifo[0]; // Empty
   EndCritical(sr);
 }
 // add element to end of pointer FIFO
 // return RXFIFOSUCCESS if successful
-int RxFifo_Put(rxDataType data){
-  rxDataType volatile *nextPutPt;
-  nextPutPt = RxPutPt+1;
-  if(nextPutPt == &RxFifo[RXFIFOSIZE]){
-    nextPutPt = &RxFifo[0];  // wrap
+int Rx_UARTFifo_Put(rx_UARTDataType data){
+  rx_UARTDataType volatile *nextPutPt;
+  nextPutPt = Rx_UARTPutPt+1;
+  if(nextPutPt == &Rx_UARTFifo[RXFIFOSIZE]){
+    nextPutPt = &Rx_UARTFifo[0];  // wrap
   }
-  if(nextPutPt == RxGetPt){
+  if(nextPutPt == Rx_UARTGetPt){
     return(RXFIFOFAIL);      // Failed, fifo full
   }
   else{
-    *(RxPutPt) = data;       // Put
-    RxPutPt = nextPutPt;     // Success, update
-		OS_Signal(&RxDataAvailable);
+    *(Rx_UARTPutPt) = data;       // Put
+    Rx_UARTPutPt = nextPutPt;     // Success, update
+	OS_Signal(&Rx_UARTDataAvailable);
     return(RXFIFOSUCCESS);
   }
 }
 // remove element from front of pointer FIFO
 // return RXFIFOSUCCESS if successful
-int RxFifo_Get(rxDataType *datapt){
-	OS_Wait(&RxDataAvailable);
+int Rx_UARTFifo_Get(rx_UARTDataType *datapt){
+	OS_Wait(&Rx_UARTDataAvailable);
 	
-	if(RxPutPt == RxGetPt ){
+	if(Rx_UARTPutPt == Rx_UARTGetPt ){
     return(RXFIFOFAIL);      // Empty if PutPt=GetPt
   }
-  *datapt = *(RxGetPt++);
-  if(RxGetPt == &RxFifo[RXFIFOSIZE]){
-     RxGetPt = &RxFifo[0];   // wrap
+  *datapt = *(Rx_UARTGetPt++);
+  if(Rx_UARTGetPt == &Rx_UARTFifo[RXFIFOSIZE]){
+     Rx_UARTGetPt = &Rx_UARTFifo[0];   // wrap
   }
   return(RXFIFOSUCCESS);
 }
 // number of elements in pointer FIFO
 // 0 to RXFIFOSIZE-1
-unsigned short RxFifo_Size(void){
-  if(RxPutPt < RxGetPt){
-    return ((unsigned short)(RxPutPt-RxGetPt+(RXFIFOSIZE*sizeof(rxDataType)))/sizeof(rxDataType));
+unsigned short Rx_UARTFifo_Size(void){
+  if(Rx_UARTPutPt < Rx_UARTGetPt){
+    return ((unsigned short)(Rx_UARTPutPt-Rx_UARTGetPt+(RXFIFOSIZE*sizeof(rx_UARTDataType)))/sizeof(rx_UARTDataType));
   }
-  return ((unsigned short)(RxPutPt-RxGetPt)/sizeof(rxDataType));
+  return ((unsigned short)(Rx_UARTPutPt-Rx_UARTGetPt)/sizeof(rx_UARTDataType));
 }

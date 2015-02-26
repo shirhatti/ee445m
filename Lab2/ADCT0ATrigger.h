@@ -26,6 +26,8 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
  http://users.ece.utexas.edu/~valvano/
  */
 
+#ifndef _ADC_H_
+#define _ADC_H_
 // This initialization function sets up the ADC according to the
 // following parameters.  Any parameters not explicitly listed
 // below are not modified:
@@ -85,3 +87,4 @@ int16_t ADC_In(void);
 //					0						Timer already in use
 int16_t ADC_Collect(uint8_t channelNum,  uint32_t Fs, void(*task)(void));
 
+#endif

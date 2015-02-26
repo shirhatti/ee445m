@@ -58,6 +58,7 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 #include <stdint.h>
 #include "ST7735.h"
 #include "inc/tm4c123gh6pm.h"
+#include "os.h"
 
 // 16 rows (0 to 15) and 21 characters (0 to 20)
 // Requires (11 + size*size*6*8) bytes of transmission for each character
@@ -1545,12 +1546,14 @@ int ferror(FILE *f){
 // Abstraction of general output device
 // Volume 2 section 3.4.5
 
+Sema4Type LCDFree;
 // *************** Output_Init ********************
 // Standard device driver initialization function for printf
 // Initialize ST7735 LCD
 // Inputs: none
 // Outputs: none
 void Output_Init(void){
+	OS_InitSemaphore(&LCDFree, 1);
   ST7735_InitR(INITR_REDTAB);
   ST7735_FillScreen(0);                 // set screen to black
 }
@@ -1626,16 +1629,20 @@ void ST7735_MessageInteger (int device, int line, long value){
 //  				value		32-bit number in unsigned decimal format
 // outputs: none
 void ST7735_Message (int device, int line, char *string, unsigned int num) {
-    // Sanitize inputs
-    if (device < 0 || device > 1) return;
-    if (line < 0 || line > 7) return;
+  OS_bWait(&LCDFree); 
 
-    Output_Color(((device)? ST7735_RED: ST7735_YELLOW));
-    
-    // Move cursor
-    ST7735_SetCursor(0, (device * 8) + line);
-    
-    // Output
-    ST7735_OutString(string);
-    ST7735_OutUDec(num);
+	// Sanitize inputs
+	if (device < 0 || device > 1) return;
+	if (line < 0 || line > 7) return;
+
+	Output_Color(((device)? ST7735_RED: ST7735_YELLOW));
+	
+	// Move cursor
+	ST7735_SetCursor(0, (device * 8) + line);
+	
+	// Output
+	ST7735_OutString(string);
+	ST7735_OutUDec(num);
+	
+	OS_bSignal(&LCDFree);
 }   

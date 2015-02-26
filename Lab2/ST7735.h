@@ -415,8 +415,6 @@ void Output_On(void);
 // Output: none
 void Output_Color(uint32_t newColor); 
 
-#endif
-
 //------------ST7735_MessageString------------
 // Divide the LCD into two logical partitions and provide
 // an interface to output a string
@@ -444,3 +442,5 @@ void ST7735_MessageInteger (int device, int line, long value);
 //  				value		32-bit number in unsigned decimal format
 // outputs: none
 void ST7735_Message (int device, int line, char *string, unsigned int num);
+
+#endif
