@@ -552,8 +552,8 @@ int16_t ADC_In(void) {
 //          numberOfSample  Number of samples requested
 // outputs: 1                       Requested succeeded
 //          0                       Timer already in use
-void (*ProducerTask)(void);
-int16_t ADC_Collect(uint8_t channelNum,  uint32_t Fs, void(*task)(void)) {
+void (*ProducerTask)(unsigned long);
+int16_t ADC_Collect(uint8_t channelNum,  uint32_t Fs, void(*task)(unsigned long)) {
     // check if timer not in use
 //    if (channelNum == TimerChannelNumber)
 //        return 0;
@@ -575,5 +575,5 @@ void ADC0Seq3_Handler(void){
   static uint16_t sampleNum = 0; 
   ADC0_ISC_R = 0x08;          // acknowledge ADC sequence 3 completion
   ADCvalue = ADC0_SSFIFO3_R;  // 12-bit result
-  (*ProducerTask)();
+  (*ProducerTask)(ADCvalue);
 }

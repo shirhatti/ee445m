@@ -645,7 +645,7 @@ void OS_MailBox_Init(void) {
 // This function will be called from a foreground thread
 // It will spin/block if the MailBox contains data not yet received 
 void OS_MailBox_Send(unsigned long data) {
-	OS_bSignal(&BoxFree);
+	OS_bWait(&BoxFree);
 	MailBox = data;
 	OS_bSignal(&DataValid);
 }
@@ -726,7 +726,7 @@ void OS_Launch(unsigned long theTimeSlice) {
 void SysTick_Handler(void) {
 	static int CountMS = TIME_1MS;
 	
-	if(CountMS <= 0) {
+	if(CountMS > 0) { //<=
 		CountMS--;
 	}
 	else {

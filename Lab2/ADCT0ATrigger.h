@@ -85,6 +85,6 @@ int16_t ADC_In(void);
 //					task				task to run
 // outputs:	1						Requested succeeded
 //					0						Timer already in use
-int16_t ADC_Collect(uint8_t channelNum,  uint32_t Fs, void(*task)(void));
+int16_t ADC_Collect(uint8_t channelNum,  uint32_t Fs, void(*task)(unsigned long));
 
 #endif

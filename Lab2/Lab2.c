@@ -373,7 +373,7 @@ int main1(void){
   NumCreated += OS_AddThread(&Consumer,128,1); 
   NumCreated += OS_AddThread(&PID,128,3);  // Lab 3, make this lowest priority
  
-  OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
+  OS_Launch(TIME_500US); // doesn't return, interrupts enabled in here
   return 0;            // this never executes
 }
 
