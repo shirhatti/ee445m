@@ -1556,6 +1556,9 @@ void Output_Init(void){
 	OS_InitSemaphore(&LCDFree, 1);
   ST7735_InitR(INITR_REDTAB);
   ST7735_FillScreen(0);                 // set screen to black
+	ST7735_SetCursor(0,0);
+	ST7735_OutString("LCD Init");
+	ST7735_SetCursor(0,0);
 }
 
 // Clear display
@@ -1586,6 +1589,8 @@ void Output_Color(uint32_t newColor){ // Set color of future output
 // 					string	pointer to NULL-terminated ASCII string
 // outputs: none
 void ST7735_MessageString (int device, int line, unsigned char *string) {
+	OS_bWait(&LCDFree); 
+	
 	// Sanitize inputs
 	if (device < 0 || device > 1) return;
 	if (line <0 || line > 7) return;
@@ -1597,6 +1602,8 @@ void ST7735_MessageString (int device, int line, unsigned char *string) {
 	
 	// Output
 	ST7735_OutString(string);
+	
+	OS_bSignal(&LCDFree);
 }	
 
 //------------ST7735_MessageInteger------------
@@ -1607,7 +1614,9 @@ void ST7735_MessageString (int device, int line, unsigned char *string) {
 // 					value		32-bit number in unsigned decimal format
 // outputs: none
 void ST7735_MessageInteger (int device, int line, long value){
-		// Sanitize inputs
+OS_bWait(&LCDFree);	
+
+	// Sanitize inputs
 	if (device < 0 || device > 1) return;
 	if (line < 0 || line > 7) return;
 	
@@ -1618,6 +1627,7 @@ void ST7735_MessageInteger (int device, int line, long value){
 	
 	// Output
 	ST7735_OutUDec(value);
+	OS_bSignal(&LCDFree);
 }
 
 //------------ST7735_Message-------------------

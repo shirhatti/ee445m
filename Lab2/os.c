@@ -32,9 +32,10 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 #include <stdint.h>
 #include "os.h"
 #include "PLL.h"
-
+#include "ST7735.h"
 // Additional includes for Lab 2
 #include "inc/tm4c123gh6pm.h"
+#include "UART.h"
 
 #define NVIC_ST_CTRL_R          (*((volatile uint32_t *)0xE000E010))
 #define NVIC_ST_CTRL_CLK_SRC    0x00000004  // Clock Source
@@ -84,6 +85,7 @@ struct tcb{
 typedef struct tcb tcbType;
 tcbType tcbs[NUMTHREADS];
 tcbType *RunPt;
+tcbType *NextRunPt;
 int32_t Stacks[NUMTHREADS][STACKSIZE];
 
 static int i;
@@ -177,7 +179,7 @@ int OSAddThreads(void(*task0)(void),
   return 1;               // successful
 }
 
-static uint32_t SystemTime;
+void InitTimer2A(uint32_t period);
 // ******** OS_Init ************
 // initialize operating system, disable interrupts until OS_Launch
 // initialize OS controlled I/O: serial, ADC, systick, LaunchPad I/O and timers 
@@ -187,7 +189,9 @@ void OS_Init(void) {
 	OS_DisableInterrupts();
   PLL_Init();                 // set processor clock to 50 MHz
 	InitAvailable();
-	SystemTime = 0;
+	InitTimer2A(TIME_1MS);
+	UART_Init();              // initialize UART
+	Output_Init();
 
   NVIC_ST_CTRL_R = 0;         // disable SysTick during setup
   NVIC_ST_CURRENT_R = 0;      // any write to current clears it
@@ -421,7 +425,7 @@ void SWTwoInit(void){
 
   LastPF0 = GPIO_PORTF_DATA_R & 0x01;
 
-  NVIC_PRI7_R = (NVIC_PRI7_R&0xFF00FFFF)|0x00400000; // (g) priority 2
+  NVIC_PRI7_R = (NVIC_PRI7_R&0xFF00FFFF)|0x00A00000; // (g) priority 5 0x00400000
   NVIC_EN0_R = 0x40000000;      // (h) enable interrupt 30 in NVIC
 }
 
@@ -514,12 +518,14 @@ void OS_Sleep(unsigned long sleepTime) {
 void OS_Kill(void) { 
 	uint32_t thread, next, prev;
 	thread = RunPt->id;
-	next = find_next(thread);
+//	next = find_next(thread);
 	prev = find_prev(thread);
 	delete_thread(thread);
 	NumThreads--;
-	tcbs[prev].next = &tcbs[next];
-	NVIC_INT_CTRL_R = 0x10000000;		// trigger PendSV
+	tcbs[prev].next = tcbs[thread].next;
+	OS_Suspend();
+	
+	//	NVIC_INT_CTRL_R = 0x10000000;		// trigger PendSV
 } 
 
 // ******** OS_Suspend ************
@@ -674,7 +680,7 @@ unsigned long OS_MailBox_Recv(void) {
 // It is ok to change the resolution and precision of this function as long as 
 //   this function and OS_TimeDifference have the same resolution and precision 
 unsigned long OS_Time(void) { 
-	return SystemTime;
+	return NVIC_ST_CURRENT_R;
 }
 
 // ******** OS_TimeDifference ************
@@ -694,7 +700,9 @@ unsigned long OS_TimeDifference(unsigned long start, unsigned long stop) {
 // Outputs: none
 // You are free to change how this works
 void OS_ClearMsTime(void) {
-	SystemTime = 0;
+	NVIC_ST_CTRL_R = 0;         // disable SysTick during setup
+	NVIC_ST_CURRENT_R = 0;
+	NVIC_ST_CTRL_R = 0x00000007;         // disable SysTick during setup
 }
 
 // ******** OS_MsTime ************
@@ -704,7 +712,45 @@ void OS_ClearMsTime(void) {
 // You are free to select the time resolution for this function
 // It is ok to make the resolution to match the first call to OS_AddPeriodicThread
 unsigned long OS_MsTime(void) {
-  return SystemTime/80000;	
+  return NVIC_ST_CURRENT_R/TIME_1MS;	
+}
+
+void InitTimer2A(uint32_t period) {
+	long sr;
+	volatile unsigned long delay;
+	
+	sr = StartCritical();
+  SYSCTL_RCGCTIMER_R |= 0x04;
+	
+  delay = SYSCTL_RCGCTIMER_R;
+	delay = SYSCTL_RCGCTIMER_R;
+	
+  TIMER2_CTL_R &= ~TIMER_CTL_TAEN; // 1) disable timer1A during setup
+                                   // 2) configure for 32-bit timer mode
+  TIMER2_CFG_R = TIMER_CFG_32_BIT_TIMER;
+                                   // 3) configure for periodic mode, default down-count settings
+  TIMER2_TAMR_R = TIMER_TAMR_TAMR_PERIOD;
+  TIMER2_TAILR_R = period - 1;     // 4) reload value
+                                   // 5) clear timer1A timeout flag
+  TIMER2_ICR_R = TIMER_ICR_TATOCINT;
+  TIMER2_IMR_R |= TIMER_IMR_TATOIM;// 6) arm timeout interrupt
+								   // 7) priority shifted to bits 31-29 for timer2A
+  NVIC_PRI5_R = (NVIC_PRI5_R&0x00FFFFFF)|(7 << 29);	
+  NVIC_EN0_R = NVIC_EN0_INT23;     // 8) enable interrupt 23 in NVIC
+  TIMER2_TAPR_R = 0;
+  TIMER2_CTL_R |= TIMER_CTL_TAEN;  // 9) enable timer2A
+	
+  EndCritical(sr);
+}
+
+void Timer2A_Handler(void){ 
+	TIMER2_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer2A timeout
+	
+	for(i = 0; i < NUMTHREADS; i++) {
+		if(!available[i] && tcbs[i].sleepCt) {
+			tcbs[i].sleepCt -= 1;
+		}
+	}
 }
 
 //******** OS_Launch *************** 
@@ -723,25 +769,12 @@ void OS_Launch(unsigned long theTimeSlice) {
   StartOS();                   // start on the first task
 }
 
-void SysTick_Handler(void) {
-	static int CountMS = TIME_1MS;
+void SysTick_Handler(void) {	
+	NextRunPt = RunPt->next;
 	
-	if(CountMS > 0) { //<=
-		CountMS--;
+	while(NextRunPt->sleepCt) {
+		NextRunPt = NextRunPt->next;
 	}
-	else {
-		for(i = 0; i < NUMTHREADS; i++) {
-			if(!available[i] && tcbs[i].sleepCt) {
-				tcbs[i].sleepCt -= 1;
-			}
-		}
-		CountMS = TIME_1MS;
-	}
-	
-	while(RunPt->sleepCt) {
-		RunPt = RunPt->next;
-	}
-	
-	SystemTime++;
+
   NVIC_INT_CTRL_R = 0x10000000;		// trigger PendSV
 }

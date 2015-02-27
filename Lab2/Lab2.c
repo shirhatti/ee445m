@@ -181,7 +181,7 @@ unsigned long myId = OS_Id();
 // Adds another foreground task
 // background threads execute once and return
 void SW1Push(void){
-  if(OS_MsTime() > 20){ // debounce
+  if(OS_MsTime() > 20 ){ // debounce
     if(OS_AddThread(&ButtonWork,100,4)){
       NumCreated++; 
     }
@@ -251,6 +251,7 @@ unsigned long myId = OS_Id();
     DCcomponent = y[0]&0xFFFF; // Real part at frequency 0, imaginary part should be zero
     OS_MailBox_Send(DCcomponent); // called every 2.5ms*64 = 160ms
   }
+	ST7735_MessageString(1,7, "Task Done");
   OS_Kill();  // done
 }
 //******** Display *************** 
@@ -329,17 +330,7 @@ void Interpreter(void);    // just a prototype, link to your interpreter
 	
 void Interpreter(void) {
 	char string[80];  // global to assist in debugging
-	Output_Init();
-  UART_Init();              // initialize UART
-	
-	SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOF; // activate port F
-	GPIO_PORTF_DIR_R |= 0x04;             // make PF2 out (built-in LED)
-  GPIO_PORTF_AFSEL_R &= ~0x04;          // disable alt funct on PF2
-  GPIO_PORTF_DEN_R |= 0x04;             // enable digital I/O on PF2
-                                        // configure PF2 as GPIO
-  GPIO_PORTF_PCTL_R = (GPIO_PORTF_PCTL_R&0xFFFFF0FF)+0x00000000;
-  GPIO_PORTF_AMSEL_R = 0;               // disable analog functionality on PF
-  GPIO_PORTF2 = 0;                      // turn off LED	
+  
 	
   while(1){
     OutCRLF(); UART_OutString(">");
@@ -373,7 +364,7 @@ int main1(void){
   NumCreated += OS_AddThread(&Consumer,128,1); 
   NumCreated += OS_AddThread(&PID,128,3);  // Lab 3, make this lowest priority
  
-  OS_Launch(TIME_500US); // doesn't return, interrupts enabled in here
+  OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes
 }
 
@@ -620,7 +611,7 @@ void Thread3d(void){
 void Thread4d(void){ int i;
   for(i=0;i<640;i++){
     Count4++;
-    OS_Sleep(1);
+    OS_Sleep(10);
   }
   OS_Kill();
 }
