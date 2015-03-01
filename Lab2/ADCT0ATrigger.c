@@ -216,7 +216,8 @@ void ADC0_InitTimer0ATriggerSeq3(uint8_t channelNum, uint32_t period){
   }
   DisableInterrupts();
   SYSCTL_RCGCADC_R |= 0x01;     // activate ADC0 
-    
+  delay = SYSCTL_RCGCTIMER_R;
+  delay = SYSCTL_RCGCTIMER_R;  
     // Enable Timer
   SYSCTL_RCGCTIMER_R |= 0x01;   // activate timer0 
   delay = SYSCTL_RCGCTIMER_R;   // allow time to finish activating
@@ -267,7 +268,7 @@ void ADC0_InitTimer0ATriggerSeq3PD3(uint32_t period){
   ADC0_SSCTL3_R = 0x06;         // 8) set flag and end                       
   ADC0_IM_R |= 0x08;            // 9) enable SS3 interrupts
   ADC0_ACTSS_R |= 0x08;         // 10) enable sample sequencer 3
-  NVIC_PRI4_R = (NVIC_PRI4_R&0xFFFF00FF)|0x00004000; // 11)priority 2
+  NVIC_PRI4_R = (NVIC_PRI4_R&0xFFFF00FF)|0x00008000; // 11)priority 2
   NVIC_EN0_R = 1<<17;           // 12) enable interrupt 17 in NVIC
   EnableInterrupts();           // 13) enable interrupts
 }
@@ -372,6 +373,14 @@ void ADC0_InitSWTriggerSeq3(uint8_t channelNum){
   SYSCTL_RCGCADC_R |= 0x00000001; // 7) activate ADC0 (actually doesn't work)
   delay = SYSCTL_RCGCGPIO_R;         // 8) allow time for clock to stabilize
   delay = SYSCTL_RCGCGPIO_R;
+	delay = SYSCTL_RCGCGPIO_R;
+	delay = SYSCTL_RCGCGPIO_R;
+	delay = SYSCTL_RCGCGPIO_R;
+	delay = SYSCTL_RCGCGPIO_R;         // 8) allow time for clock to stabilize
+  delay = SYSCTL_RCGCGPIO_R;
+	delay = SYSCTL_RCGCGPIO_R;
+	delay = SYSCTL_RCGCGPIO_R;
+	delay = SYSCTL_RCGCGPIO_R;
 //  SYSCTL_RCGC0_R &= ~0x00000300;  // 9) configure for 125K (legacy code)
   ADC0_PC_R &= ~0xF;              // 9) clear max sample rate field
   ADC0_PC_R |= 0x1;               //    configure for 125K samples/sec

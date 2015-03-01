@@ -49,6 +49,7 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 
 // Additional defines for Lab 2
 #define NVIC_EN0_INT21          0x00200000  // Interrupt 21 enable
+#define NVIC_EN1_INT35					0x00000008
 
 #define TIMER_CFG_32_BIT_TIMER  0x00000000  // 32-bit timer configuration
 #define TIMER_TAMR_TACDIR       0x00000010  // GPTM Timer A Count Direction
@@ -180,6 +181,8 @@ int OSAddThreads(void(*task0)(void),
 }
 
 void InitTimer2A(uint32_t period);
+void InitTimer3A(uint32_t period);
+static uint32_t SystemTime;
 // ******** OS_Init ************
 // initialize operating system, disable interrupts until OS_Launch
 // initialize OS controlled I/O: serial, ADC, systick, LaunchPad I/O and timers 
@@ -189,9 +192,11 @@ void OS_Init(void) {
 	OS_DisableInterrupts();
   PLL_Init();                 // set processor clock to 50 MHz
 	InitAvailable();
-	InitTimer2A(TIME_1MS);
+	//InitTimer2A(TIME_2MS);
+	InitTimer3A(1000);
 	UART_Init();              // initialize UART
 	Output_Init();
+	SystemTime = 0;
 
   NVIC_ST_CTRL_R = 0;         // disable SysTick during setup
   NVIC_ST_CURRENT_R = 0;      // any write to current clears it
@@ -319,6 +324,51 @@ unsigned long OS_Id(void) {
 	return RunPt->id;
 }
 
+void InitTimer3A(uint32_t period) {
+	long sr;
+	volatile unsigned long delay;
+	
+	sr = StartCritical();
+  SYSCTL_RCGCTIMER_R |= 0x08;
+	
+  delay = SYSCTL_RCGCTIMER_R;
+	delay = SYSCTL_RCGCTIMER_R;
+	
+  TIMER3_CTL_R &= ~TIMER_CTL_TAEN; // 1) disable timer1A during setup
+                                   // 2) configure for 32-bit timer mode
+  TIMER3_CFG_R = TIMER_CFG_32_BIT_TIMER;
+                                   // 3) configure for periodic mode, default down-count settings
+  TIMER3_TAMR_R = TIMER_TAMR_TAMR_PERIOD;
+  TIMER3_TAILR_R = 1000 - 1;     // 4) reload value
+                                   // 5) clear timer1A timeout flag
+  TIMER3_ICR_R = TIMER_ICR_TATOCINT;
+  TIMER3_IMR_R |= TIMER_IMR_TATOIM;// 6) arm timeout interrupt
+								   // 7) priority shifted to bits 15-13 for timer1A
+  NVIC_PRI8_R = (NVIC_PRI8_R&0x00FFFFFF)|(1 << 29);	//3
+  NVIC_EN1_R = NVIC_EN1_INT35;     // 8) enable interrupt 21 in NVIC
+  TIMER3_TAPR_R = 0;
+  TIMER3_CTL_R |= TIMER_CTL_TAEN;  // 9) enable timer1A
+	
+  EndCritical(sr);
+}
+
+void Timer3A_Handler(void){ 
+	static int i = 0;
+	i++;
+  TIMER3_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer1A timeout
+	SystemTime+=20;
+	
+	if (i%500 ==0) {
+		for(i = 0; i < NUMTHREADS; i++) {
+			if(!available[i] && tcbs[i].sleepCt) {
+				tcbs[i].sleepCt -= 1;
+			}
+		}
+	}
+	GPIO_PORTE_DATA_R ^= 0x02;
+	
+}
+
 void (*PeriodicTask)(void);
 
 void InitTimer1A(uint32_t period) {
@@ -341,7 +391,7 @@ void InitTimer1A(uint32_t period) {
   TIMER1_ICR_R = TIMER_ICR_TATOCINT;
   TIMER1_IMR_R |= TIMER_IMR_TATOIM;// 6) arm timeout interrupt
 								   // 7) priority shifted to bits 15-13 for timer1A
-  NVIC_PRI5_R = (NVIC_PRI5_R&0xFFFF00FF)|(6 << 13);	
+  NVIC_PRI5_R = (NVIC_PRI5_R&0xFFFF00FF)|(3 << 13);	//3
   NVIC_EN0_R = NVIC_EN0_INT21;     // 8) enable interrupt 21 in NVIC
   TIMER1_TAPR_R = 0;
   TIMER1_CTL_R |= TIMER_CTL_TAEN;  // 9) enable timer1A
@@ -351,7 +401,7 @@ void InitTimer1A(uint32_t period) {
 
 void Timer1A_Handler(void){ 
   TIMER1_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer1A timeout
-	(*PeriodicTask)();
+	//(*PeriodicTask)();
 }
 //******** OS_AddPeriodicThread *************** 
 // add a background periodic task
@@ -373,7 +423,7 @@ void Timer1A_Handler(void){
 int OS_AddPeriodicThread(void(*task)(void), 
    unsigned long period, unsigned long priority) { 
 	PeriodicTask = task;
-	InitTimer1A(period);
+	InitTimer2A(period);
 		 
   return 1;
 }
@@ -389,18 +439,18 @@ void SWOneInit(void){
   GPIO_PORTF_DIR_R &= ~0x10;    // (c) make PF4,0 in (built-in button)
   GPIO_PORTF_AFSEL_R &= ~0x10;  //     disable alt funct on PF4,0
   GPIO_PORTF_DEN_R |= 0x10;     //     enable digital I/O on PF4,0
-  GPIO_PORTF_PCTL_R &= ~0x000F000F; //  configure PF4,0 as GPIO
+  GPIO_PORTF_PCTL_R &= ~0;    //     PF4,PF0 is not both edges
+  GPIO_PORTF_IEV_R &= ~0x10;    //     PF4,PF0 falling edge event
+  GPIO_PORTF_ICR_R = 0x10; //  configure PF4,0 as GPIO
   GPIO_PORTF_AMSEL_R &= ~0x10;  //     disable analog functionality on PF4,0
   GPIO_PORTF_PUR_R |= 0x10;     //     enable weak pull-up on PF4,0
   GPIO_PORTF_IS_R &= ~0x10;     // (d) PF4,PF0 is edge-sensitive
-  GPIO_PORTF_IBE_R &= ~0x10;    //     PF4,PF0 is not both edges
-  GPIO_PORTF_IEV_R &= ~0x10;    //     PF4,PF0 falling edge event
-  GPIO_PORTF_ICR_R = 0x10;      // (e) clear flags 4,0
+  GPIO_PORTF_IBE_R |= ~0x1;      // (e) clear flags 4,0
   GPIO_PORTF_IM_R |= 0x10;      // (f) arm interrupt on PF4,PF0
 
   LastPF4 = GPIO_PORTF_DATA_R & 0x10;
 
-  NVIC_PRI7_R = (NVIC_PRI7_R&0xFF00FFFF)|0x00400000; // (g) priority 2
+  NVIC_PRI7_R = (NVIC_PRI7_R&0xFF00FFFF)|0x00A00000; // (g) priority 2
   NVIC_EN0_R = 0x40000000;      // (h) enable interrupt 30 in NVIC
 }
 
@@ -537,7 +587,8 @@ void OS_Kill(void) {
 // output: none
 void OS_Suspend(void) { 
 #ifdef WITH_SYSTICK	
-	NVIC_ST_CURRENT_R = 0;					// clear counter
+
+//	NVIC_ST_CURRENT_R = 0;					// clear counter
 	NVIC_INT_CTRL_R = 0x04000000;		// trigger SysTick
 #else
 	NVIC_INT_CTRL_R = 0x10000000;		// trigger PendSV
@@ -680,7 +731,7 @@ unsigned long OS_MailBox_Recv(void) {
 // It is ok to change the resolution and precision of this function as long as 
 //   this function and OS_TimeDifference have the same resolution and precision 
 unsigned long OS_Time(void) { 
-	return NVIC_ST_CURRENT_R;
+	return SystemTime;
 }
 
 // ******** OS_TimeDifference ************
@@ -691,7 +742,7 @@ unsigned long OS_Time(void) {
 // It is ok to change the resolution and precision of this function as long as 
 //   this function and OS_Time have the same resolution and precision 
 unsigned long OS_TimeDifference(unsigned long start, unsigned long stop) { 
-	return (stop-start);
+	return stop-start;
 }
 
 // ******** OS_ClearMsTime ************
@@ -700,9 +751,7 @@ unsigned long OS_TimeDifference(unsigned long start, unsigned long stop) {
 // Outputs: none
 // You are free to change how this works
 void OS_ClearMsTime(void) {
-	NVIC_ST_CTRL_R = 0;         // disable SysTick during setup
-	NVIC_ST_CURRENT_R = 0;
-	NVIC_ST_CTRL_R = 0x00000007;         // disable SysTick during setup
+	//SystemTime = 0;
 }
 
 // ******** OS_MsTime ************
@@ -712,7 +761,8 @@ void OS_ClearMsTime(void) {
 // You are free to select the time resolution for this function
 // It is ok to make the resolution to match the first call to OS_AddPeriodicThread
 unsigned long OS_MsTime(void) {
-  return NVIC_ST_CURRENT_R/TIME_1MS;	
+  unsigned long retVal = OS_Time()/1000;	
+	return retVal;
 }
 
 void InitTimer2A(uint32_t period) {
@@ -745,12 +795,7 @@ void InitTimer2A(uint32_t period) {
 
 void Timer2A_Handler(void){ 
 	TIMER2_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer2A timeout
-	
-	for(i = 0; i < NUMTHREADS; i++) {
-		if(!available[i] && tcbs[i].sleepCt) {
-			tcbs[i].sleepCt -= 1;
-		}
-	}
+	(*PeriodicTask)();
 }
 
 //******** OS_Launch *************** 

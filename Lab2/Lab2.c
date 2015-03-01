@@ -89,9 +89,9 @@ int main(void) {
 
 void PortE_Init(void){ 
 	unsigned long volatile delay;
-  SYSCTL_RCGC2_R |= 0x10;       // activate port E
-  delay = SYSCTL_RCGC2_R;        
-  delay = SYSCTL_RCGC2_R;         
+  SYSCTL_RCGCGPIO_R |= 0x10;       // activate port E
+  delay = SYSCTL_RCGCGPIO_R;        
+  delay = SYSCTL_RCGCGPIO_R;         
   GPIO_PORTE_DIR_R |= 0x0F;    // make PE3-0 output heartbeats
   GPIO_PORTE_AFSEL_R &= ~0x0F;   // disable alt funct on PE3-0
   GPIO_PORTE_DEN_R |= 0x0F;     // enable digital I/O on PE3-0
@@ -130,6 +130,7 @@ unsigned long input;
 unsigned static long LastTime;  // time at previous ADC sample
 unsigned long thisTime;         // time at current ADC sample
 long jitter;                    // time between measured and expected, in us
+unsigned long diff;
   if(NumSamples < RUNLENGTH){   // finite time run
     PE0 ^= 0x01;
     input = ADC_In();           // channel set when calling ADC_Init
@@ -137,8 +138,8 @@ long jitter;                    // time between measured and expected, in us
     thisTime = OS_Time();       // current time, 12.5 ns
     DASoutput = Filter(input);
     FilterWork++;        // calculation finished
-    if(FilterWork>1){    // ignore timing of first interrupt
-      unsigned long diff = OS_TimeDifference(LastTime,thisTime);
+    if(FilterWork>5){    // ignore timing of first interrupt
+      diff = OS_TimeDifference(LastTime,thisTime);
       if(diff>PERIOD){
         jitter = (diff-PERIOD+4)/8;  // in 0.1 usec
       }else{
@@ -153,6 +154,7 @@ long jitter;                    // time between measured and expected, in us
       JitterHistogram[jitter]++; 
     }
     LastTime = thisTime;
+		//MaxJitter = diff;
     PE0 ^= 0x01;
   }
 }
@@ -166,7 +168,7 @@ long jitter;                    // time between measured and expected, in us
 void ButtonWork(void){
 unsigned long myId = OS_Id(); 
   PE1 ^= 0x02;
-  ST7735_Message(1,0,"NumCreated =",NumCreated); 
+  ST7735_Message(1,0,"NumCreated  =",NumCreated); 
   PE1 ^= 0x02;
   OS_Sleep(50);     // set this to sleep for 50msec
   ST7735_Message(1,1,"PIDWork     =",PIDWork);
@@ -181,6 +183,7 @@ unsigned long myId = OS_Id();
 // Adds another foreground task
 // background threads execute once and return
 void SW1Push(void){
+	unsigned long a = OS_MsTime();
   if(OS_MsTime() > 20 ){ // debounce
     if(OS_AddThread(&ButtonWork,100,4)){
       NumCreated++; 
@@ -342,8 +345,8 @@ void Interpreter(void) {
 }
 //*******************final user main DEMONTRATE THIS TO TA**********
 int main1(void){ 
-  OS_Init();           // initialize, disable interrupts
   PortE_Init();
+	OS_Init();           // initialize, disable interrupts
   DataLost = 0;        // lost data between producer and consumer
   NumSamples = 0;
   MaxJitter = 0;       // in 1us units
@@ -356,7 +359,7 @@ int main1(void){
   OS_AddSW1Task(&SW1Push,2);
 //  OS_AddSW2Task(&SW2Push,2);  // add this line in Lab 3
   ADC_Init(4);  // sequencer 3, channel 4, PD3, sampling in DAS()
-  OS_AddPeriodicThread(&DAS,PERIOD,1); // 2 kHz real time sampling of PD3
+	OS_AddPeriodicThread(&DAS,PERIOD,1); // 2 kHz real time sampling of PD3
 
   NumCreated = 0 ;
 // create initial foreground threads
