@@ -15,7 +15,7 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 #define __OS_H  1
 
 // edit these depending on your clock        
-#define TIME_1MS    50000          
+#define TIME_1MS    80000          
 #define TIME_2MS    (2*TIME_1MS)  
 #define TIME_500US  (TIME_1MS/2)  
 #define TIME_250US  (TIME_1MS/5)  

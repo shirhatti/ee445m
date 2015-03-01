@@ -494,6 +494,7 @@ void ADC0_InitSWTriggerSeq2(uint8_t channelNum){
   SYSCTL_RCGCADC_R |= 0x00000001; // 7) activate ADC0 (actually doesn't work)
   delay = SYSCTL_RCGCGPIO_R;         // 8) allow time for clock to stabilize
   delay = SYSCTL_RCGCGPIO_R;
+	delay = SYSCTL_RCGCGPIO_R;         // 8) allow time for clock to stabilize
 //  SYSCTL_RCGC0_R &= ~0x00000300;  // 9) configure for 125K (legacy code)
   ADC0_PC_R &= ~0xF;              // 9) clear max sample rate field
   ADC0_PC_R |= 0x1;               //    configure for 125K samples/sec

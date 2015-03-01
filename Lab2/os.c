@@ -182,7 +182,8 @@ int OSAddThreads(void(*task0)(void),
 
 void InitTimer2A(uint32_t period);
 void InitTimer3A(uint32_t period);
-static uint32_t SystemTime;
+//static uint32_t SystemTime;
+static uint32_t MSTime;
 // ******** OS_Init ************
 // initialize operating system, disable interrupts until OS_Launch
 // initialize OS controlled I/O: serial, ADC, systick, LaunchPad I/O and timers 
@@ -192,12 +193,13 @@ void OS_Init(void) {
 	OS_DisableInterrupts();
   PLL_Init();                 // set processor clock to 50 MHz
 	InitAvailable();
-	//InitTimer2A(TIME_2MS);
-	InitTimer3A(1000);
+	InitTimer2A(TIME_1MS);
+	InitTimer3A(80);
 	UART_Init();              // initialize UART
 	Output_Init();
-	SystemTime = 0;
-
+//	SystemTime = 0;
+	MSTime = 0;
+  
   NVIC_ST_CTRL_R = 0;         // disable SysTick during setup
   NVIC_ST_CURRENT_R = 0;      // any write to current clears it
 															// lowest PRI so only foreground interrupted
@@ -339,7 +341,7 @@ void InitTimer3A(uint32_t period) {
   TIMER3_CFG_R = TIMER_CFG_32_BIT_TIMER;
                                    // 3) configure for periodic mode, default down-count settings
   TIMER3_TAMR_R = TIMER_TAMR_TAMR_PERIOD;
-  TIMER3_TAILR_R = 1000 - 1;     // 4) reload value
+  TIMER3_TAILR_R = 0xFFFFFFFF - 1;     // 4) reload value
                                    // 5) clear timer1A timeout flag
   TIMER3_ICR_R = TIMER_ICR_TATOCINT;
   TIMER3_IMR_R |= TIMER_IMR_TATOIM;// 6) arm timeout interrupt
@@ -353,18 +355,10 @@ void InitTimer3A(uint32_t period) {
 }
 
 void Timer3A_Handler(void){ 
-	static int i = 0;
-	i++;
-  TIMER3_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer1A timeout
-	SystemTime+=20;
 	
-	if (i%500 ==0) {
-		for(i = 0; i < NUMTHREADS; i++) {
-			if(!available[i] && tcbs[i].sleepCt) {
-				tcbs[i].sleepCt -= 1;
-			}
-		}
-	}
+  TIMER3_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer1A timeout
+//	SystemTime = SystemTime + 1;
+
 	GPIO_PORTE_DATA_R ^= 0x02;
 	
 }
@@ -401,7 +395,7 @@ void InitTimer1A(uint32_t period) {
 
 void Timer1A_Handler(void){ 
   TIMER1_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer1A timeout
-	//(*PeriodicTask)();
+	(*PeriodicTask)();
 }
 //******** OS_AddPeriodicThread *************** 
 // add a background periodic task
@@ -423,7 +417,7 @@ void Timer1A_Handler(void){
 int OS_AddPeriodicThread(void(*task)(void), 
    unsigned long period, unsigned long priority) { 
 	PeriodicTask = task;
-	InitTimer2A(period);
+	InitTimer1A(period);
 		 
   return 1;
 }
@@ -445,7 +439,7 @@ void SWOneInit(void){
   GPIO_PORTF_AMSEL_R &= ~0x10;  //     disable analog functionality on PF4,0
   GPIO_PORTF_PUR_R |= 0x10;     //     enable weak pull-up on PF4,0
   GPIO_PORTF_IS_R &= ~0x10;     // (d) PF4,PF0 is edge-sensitive
-  GPIO_PORTF_IBE_R |= ~0x1;      // (e) clear flags 4,0
+  GPIO_PORTF_IBE_R |= 0x10;      // (e) clear flags 4,0
   GPIO_PORTF_IM_R |= 0x10;      // (f) arm interrupt on PF4,PF0
 
   LastPF4 = GPIO_PORTF_DATA_R & 0x10;
@@ -731,7 +725,7 @@ unsigned long OS_MailBox_Recv(void) {
 // It is ok to change the resolution and precision of this function as long as 
 //   this function and OS_TimeDifference have the same resolution and precision 
 unsigned long OS_Time(void) { 
-	return SystemTime;
+	return TIMER3_TAILR_R - TIMER3_TAV_R;
 }
 
 // ******** OS_TimeDifference ************
@@ -741,8 +735,15 @@ unsigned long OS_Time(void) {
 // The time resolution should be less than or equal to 1us, and the precision at least 12 bits
 // It is ok to change the resolution and precision of this function as long as 
 //   this function and OS_Time have the same resolution and precision 
-unsigned long OS_TimeDifference(unsigned long start, unsigned long stop) { 
-	return stop-start;
+unsigned long OS_TimeDifference(unsigned long start, unsigned long stop) {
+	unsigned long difference;
+	if (stop < start) {
+		difference = 0xFFFFFFFF - start + stop;
+	} 
+	else {
+		difference = stop-start;
+	}
+	return difference;
 }
 
 // ******** OS_ClearMsTime ************
@@ -751,7 +752,7 @@ unsigned long OS_TimeDifference(unsigned long start, unsigned long stop) {
 // Outputs: none
 // You are free to change how this works
 void OS_ClearMsTime(void) {
-	//SystemTime = 0;
+	MSTime = 0;
 }
 
 // ******** OS_MsTime ************
@@ -761,8 +762,8 @@ void OS_ClearMsTime(void) {
 // You are free to select the time resolution for this function
 // It is ok to make the resolution to match the first call to OS_AddPeriodicThread
 unsigned long OS_MsTime(void) {
-  unsigned long retVal = OS_Time()/1000;	
-	return retVal;
+  //uint32_t retVal = (OS_Time()-MSTime)/TIME_1MS;	
+	return MSTime;
 }
 
 void InitTimer2A(uint32_t period) {
@@ -785,7 +786,7 @@ void InitTimer2A(uint32_t period) {
   TIMER2_ICR_R = TIMER_ICR_TATOCINT;
   TIMER2_IMR_R |= TIMER_IMR_TATOIM;// 6) arm timeout interrupt
 								   // 7) priority shifted to bits 31-29 for timer2A
-  NVIC_PRI5_R = (NVIC_PRI5_R&0x00FFFFFF)|(7 << 29);	
+  NVIC_PRI5_R = (NVIC_PRI5_R&0x00FFFFFF)|(2 << 29);	
   NVIC_EN0_R = NVIC_EN0_INT23;     // 8) enable interrupt 23 in NVIC
   TIMER2_TAPR_R = 0;
   TIMER2_CTL_R |= TIMER_CTL_TAEN;  // 9) enable timer2A
@@ -794,8 +795,16 @@ void InitTimer2A(uint32_t period) {
 }
 
 void Timer2A_Handler(void){ 
+	int j;
+	
 	TIMER2_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer2A timeout
-	(*PeriodicTask)();
+	MSTime++;
+	
+	for(j = 0; j < NUMTHREADS; j++) {
+		if(!available[j] && tcbs[j].sleepCt) {
+			tcbs[j].sleepCt -= 1;
+		}
+	}
 }
 
 //******** OS_Launch *************** 

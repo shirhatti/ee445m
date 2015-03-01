@@ -124,6 +124,8 @@ static unsigned long n=3;   // 3, 4, or 5
 // samples channel 4, PD3,
 // inputs:  none
 // outputs: none
+unsigned long MaxDiff;
+unsigned long StartTime, StopTime;
 unsigned long DASoutput;
 void DAS(void){ 
 unsigned long input;  
@@ -138,7 +140,7 @@ unsigned long diff;
     thisTime = OS_Time();       // current time, 12.5 ns
     DASoutput = Filter(input);
     FilterWork++;        // calculation finished
-    if(FilterWork>5){    // ignore timing of first interrupt
+    if(FilterWork>1){    // ignore timing of first interrupt
       diff = OS_TimeDifference(LastTime,thisTime);
       if(diff>PERIOD){
         jitter = (diff-PERIOD+4)/8;  // in 0.1 usec
@@ -147,6 +149,9 @@ unsigned long diff;
       }
       if(jitter > MaxJitter){
         MaxJitter = jitter; // in usec
+				MaxDiff = diff;
+				StartTime = LastTime;
+				StopTime = thisTime;
       }       // jitter should be 0
       if(jitter >= JitterSize){
         jitter = JITTERSIZE-1;
@@ -154,7 +159,7 @@ unsigned long diff;
       JitterHistogram[jitter]++; 
     }
     LastTime = thisTime;
-		//MaxJitter = diff;
+	  //MaxDiff = diff;
     PE0 ^= 0x01;
   }
 }
@@ -174,6 +179,9 @@ unsigned long myId = OS_Id();
   ST7735_Message(1,1,"PIDWork     =",PIDWork);
   ST7735_Message(1,2,"DataLost    =",DataLost);
   ST7735_Message(1,3,"Jitter 0.1us=",MaxJitter);
+	ST7735_Message(1,4,"Difference  =",MaxDiff);
+	ST7735_Message(1,5,"StartTime   =",StartTime);
+	ST7735_Message(1,6,"StopTime    =",StopTime);
   PE1 ^= 0x02;
   OS_Kill();  // done, OS does not return from a Kill
 } 
