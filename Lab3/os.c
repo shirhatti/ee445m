@@ -753,7 +753,7 @@ void OS_Sleep(unsigned long sleepTime) {
 // output: none
 void OS_Kill(void) { 
 	uint32_t thread, priority; 
-	
+	GPIO_PORTD_DATA_R ^= 0x01;
 	thread = RunPt->id;
 	priority = RunPt->priority;
 
@@ -761,7 +761,7 @@ void OS_Kill(void) {
 	delete_thread(thread);
 
 	NumThreads--;
-	
+	GPIO_PORTD_DATA_R ^= 0x01;
 	OS_Suspend();
 }
 
@@ -783,11 +783,14 @@ void OS_Kill_Round_Robin(void) {
 // input:  none
 // output: none
 void OS_Suspend(void) { 
+	GPIO_PORTD_DATA_R ^= 0x02;
 #ifdef WITH_SYSTICK	
 	NVIC_ST_CURRENT_R = 0;					// clear counter
+	GPIO_PORTD_DATA_R ^= 0x02;
 	NVIC_INT_CTRL_R = 0x04000000;		// trigger SysTick
 #else
 	NextRunPt = RunPt->next;
+	GPIO_PORTD_DATA_R ^= 0x02;
 	NVIC_INT_CTRL_R = 0x10000000;		// trigger PendSV
 #endif
 }
@@ -1032,6 +1035,7 @@ void OS_Launch(unsigned long theTimeSlice) {
 
 static int pri;
 void SysTick_Handler(void) {
+	GPIO_PORTD_DATA_R ^= 0x08;
 	RunPtArray[PriLevel] = RunPtArray[PriLevel]->next;
 	
 	pri = 0;
@@ -1053,7 +1057,7 @@ void SysTick_Handler(void) {
 	if(PriLevel == NUMPRI) {} // Error
 
 	NextRunPt = RunPtArray[PriLevel];
-
+	GPIO_PORTD_DATA_R ^= 0x08;
   NVIC_INT_CTRL_R = 0x10000000;		// trigger PendSV
 }
 

@@ -71,11 +71,13 @@ unsigned long JitterHistogram[JITTERSIZE]={0,};
 #define PE3  (*((volatile unsigned long *)0x40024020))
 
 //#define MAIN1
+#define LAB3
 int Testmain1(void);
 int Testmain2(void);
 int Testmain2b(void);
 int Testmain3(void);
 int Testmain4(void);
+int Testmain5(void);
 int main1(void);
 int main(void) {
 //	#ifdef MAIN1
@@ -84,7 +86,7 @@ int main(void) {
 //	Testmain2();
 //	#endif
 //	Testmain4();
-	Testmain3();
+	Testmain5();
 }
 
 void PortE_Init(void){ 
@@ -467,12 +469,20 @@ void Thread3b(void){
   }
 }
 int Testmain2(void){  // Testmain2
+	volatile int delay;
   OS_Init();           // initialize, disable interrupts
   PortE_Init();       // profile user threads
   NumCreated = 0 ;
-  NumCreated += OS_AddThread(&Thread1b,128,1); 
-  NumCreated += OS_AddThread(&Thread2b,128,1); 
-  NumCreated += OS_AddThread(&Thread3b,128,1); 
+	SYSCTL_RCGCGPIO_R |= 8;
+	delay = SYSCTL_RCGCGPIO_R;
+	GPIO_PORTD_DIR_R = 0;
+	GPIO_PORTD_DEN_R = 0xFF;
+	GPIO_PORTD_AMSEL_R = 0;
+	GPIO_PORTD_AFSEL_R = 0;
+	GPIO_PORTD_DATA_R = 0;
+  NumCreated += OS_AddThread(&Thread1b,128,2); 
+  NumCreated += OS_AddThread(&Thread2b,128,2); 
+  NumCreated += OS_AddThread(&Thread3b,128,3); 
   // Count1 Count2 Count3 should be equal on average
   // counts are larger than testmain1
  
@@ -569,12 +579,20 @@ void BackgroundThread5c(void){   // called when Select button pushed
 }
 
 int Testmain3(void){   // Testmain3
+	volatile int delay;
   Count4 = 0;          
   OS_Init();           // initialize, disable interrupts
 // Count2 + Count5 should equal Count1
   NumCreated = 0 ;
-  OS_AddSW1Task(&BackgroundThread5c,2);
-  NumCreated += OS_AddThread(&Thread2c,128,3); //2 
+	SYSCTL_RCGCGPIO_R |= 8;
+	delay = SYSCTL_RCGCGPIO_R;
+	GPIO_PORTD_DIR_R = 0;
+	GPIO_PORTD_DEN_R = 0xFF;
+	GPIO_PORTD_AMSEL_R = 0;
+	GPIO_PORTD_AFSEL_R = 0;
+	GPIO_PORTD_DATA_R = 0;
+  OS_AddSW1Task(&BackgroundThread5c,3);
+  NumCreated += OS_AddThread(&Thread2c,128,2); //2 
   NumCreated += OS_AddThread(&Thread3c,128,3); 
   NumCreated += OS_AddThread(&Thread4c,128,3); 
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
@@ -601,7 +619,7 @@ static int i=0;
   if(i==50){
     i = 0;         //every 50 ms
     Count1++;
-    OS_bSignal(&Readyd);
+    OS_Signal(&Readyd);
   }
 }
 void Thread2d(void){
@@ -609,7 +627,7 @@ void Thread2d(void){
   Count1 = 0;          
   Count2 = 0;          
   for(;;){
-    OS_bWait(&Readyd);
+    OS_Wait(&Readyd);
     Count2++;     
   }
 }
@@ -630,14 +648,22 @@ void BackgroundThread5d(void){   // called when Select button pushed
   NumCreated += OS_AddThread(&Thread4d,128,3); 
 }
 int Testmain4(void){   // Testmain4
+	volatile int delay;
   Count4 = 0;          
   OS_Init();           // initialize, disable interrupts
   NumCreated = 0 ;
-  OS_AddPeriodicThread(&BackgroundThread1d,PERIOD,0); 
+	SYSCTL_RCGCGPIO_R |= 8;
+	GPIO_PORTD_DIR_R = 0;
+	GPIO_PORTD_DEN_R = 0xFF;
+	GPIO_PORTD_AMSEL_R = 0;
+	GPIO_PORTD_AFSEL_R = 0;
+	GPIO_PORTD_DATA_R = 0;
+  OS_AddPeriodicThread(&BackgroundThread1d,PERIOD,2);//0 
   OS_AddSW1Task(&BackgroundThread5d,2);
-//  NumCreated += OS_AddThread(&Interpreter,128,2);
-	NumCreated += OS_AddThread(&Thread2d,128,2); 
-  NumCreated += OS_AddThread(&Thread3d,128,3); 
+	OS_AddSW2Task(&BackgroundThread5d,2);
+  NumCreated += OS_AddThread(&Interpreter,128,3);//2
+	NumCreated += OS_AddThread(&Thread2d,128,3); //2
+  NumCreated += OS_AddThread(&Thread3d,128,4); 
   NumCreated += OS_AddThread(&Thread4d,128,3); 
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes
@@ -677,20 +703,55 @@ void Thread6(void){  // foreground thread
     PE0 ^= 0x01;        // debugging toggle bit 0  
   }
 }
-extern void Jitter(void);   // prints jitter information (write this)
+long MaxJitter;
+unsigned static long LastTime;  // time at previous ADC sample
+unsigned long thisTime;         // time at current ADC sample
+long jitter;                    // time between measured and expected, in us
+unsigned long diff;
+void Jitter(void) {
+unsigned long myId = OS_Id(); 
+  ST7735_Message(1,6,"Jitter     =",jitter); 
+  ST7735_Message(1,7,"Max Jitter =",MaxJitter);
+  OS_Kill();  // done, OS does not return from a Kill 
+}
 void Thread7(void){  // foreground thread
-  UART_OutString("\n\rEE345M/EE380L, Lab 3 Preparation 2\n\r");
   OS_Sleep(5000);   // 10 seconds        
   Jitter();         // print jitter information
-  UART_OutString("\n\r\n\r");
+	OS_Sleep(5000);   // 10 seconds        
+  Jitter();         // print jitter information
   OS_Kill();
 }
 #define workA 500       // {5,50,500 us} work in Task A
 #define counts1us 10    // number of OS_Time counts per 1us
+
+
+
 void TaskA(void){       // called every {1000, 2990us} in background
+	static long Count = 0;
   PE1 = 0x02;      // debugging profile  
   CountA++;
-  PseudoWork(workA*counts1us); //  do work (100ns time resolution)
+	thisTime = OS_Time();       // current time, 12.5 ns
+  PseudoWork(workA*counts1us); //  do work (100ns time resolution)     
+	Count++;        // calculation finished
+	if(Count>1){    // ignore timing of first interrupt
+		diff = OS_TimeDifference(LastTime,thisTime);
+		if(diff>PERIOD){
+			jitter = (diff-TIME_1MS+4)/8;  // in 0.1 usec
+		}else{
+			jitter = (TIME_1MS-diff+4)/8;  // in 0.1 usec
+		}
+		if(jitter > MaxJitter){
+			MaxJitter = jitter; // in usec
+			MaxDiff = diff;
+			StartTime = LastTime;
+			StopTime = thisTime;
+		}       // jitter should be 0
+		if(jitter >= JitterSize){
+			jitter = JITTERSIZE-1;
+		}
+		JitterHistogram[jitter]++; 
+	}
+	LastTime = thisTime;
   PE1 = 0x00;      // debugging profile  
 }
 #define workB 250       // 250 us work in Task B
@@ -702,13 +763,21 @@ void TaskB(void){       // called every pB in background
 }
 
 int Testmain5(void){       // Testmain5 Lab 3
+	volatile int delay;
   PortE_Init();
+	SYSCTL_RCGCGPIO_R |= 8;
+	delay = SYSCTL_RCGCGPIO_R;
+	GPIO_PORTD_DIR_R = 0;
+	GPIO_PORTD_DEN_R = 0xFF;
+	GPIO_PORTD_AMSEL_R = 0;
+	GPIO_PORTD_AFSEL_R = 0;
+	GPIO_PORTD_DATA_R = 0;
   OS_Init();           // initialize, disable interrupts
   NumCreated = 0 ;
   NumCreated += OS_AddThread(&Thread6,128,2); 
   NumCreated += OS_AddThread(&Thread7,128,1); 
-  OS_AddPeriodicThread(&TaskA,TIME_1MS,0);           // 1 ms, higher priority
-  OS_AddPeriodicThread(&TaskB,2*TIME_1MS,1);         // 2 ms, lower priority
+  OS_AddPeriodicThread(&TaskA,TIME_1MS,1);           // 1 ms, higher priority
+  OS_AddPeriodicThread(&TaskB,2*TIME_1MS,2);         // 2 ms, lower priority
  
   OS_Launch(TIME_2MS); // 2ms, doesn't return, interrupts enabled in here
   return 0;             // this never executes
@@ -791,6 +860,13 @@ static long result;
 int Testmain6(void){      // Testmain6  Lab 3
   volatile unsigned long delay;
   OS_Init();           // initialize, disable interrupts
+	SYSCTL_RCGCGPIO_R |= 8;
+	delay = SYSCTL_RCGCGPIO_R;
+	GPIO_PORTD_DIR_R = 0;
+	GPIO_PORTD_DEN_R = 0xFF;
+	GPIO_PORTD_AMSEL_R = 0;
+	GPIO_PORTD_AFSEL_R = 0;
+	GPIO_PORTD_DATA_R = 0;
   delay = add(3,4);
   PortE_Init();
   SignalCount1 = 0;   // number of times s is signaled

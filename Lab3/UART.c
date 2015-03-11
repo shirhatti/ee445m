@@ -33,6 +33,7 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 // U0Tx (VCP transmit) connected to PA1
 #include <stdint.h>
 #include "inc/tm4c123gh6pm.h"
+#include "os.h"
 
 #include "UART_FIFO.h"
 #include "UART.h"
@@ -75,7 +76,11 @@ void WaitForInterrupt(void);  // low power mode
 	
 // Initialize UART0
 // Baud rate is 115200 bits/sec
+
+Sema4Type UARTFree;
+
 void UART_Init(void){
+	OS_InitSemaphore(&UARTFree, 1);
   SYSCTL_RCGCUART_R |= 0x01;            // activate UART0
   SYSCTL_RCGCGPIO_R |= 0x01;            // activate port A
   Rx_UARTFifo_Init();                        // initialize empty FIFOs
@@ -165,10 +170,12 @@ void UART0_Handler(void){
 // Input: pointer to a NULL-terminated string to be transferred
 // Output: none
 void UART_OutString(char *pt){
+	OS_bWait(&UARTFree);
   while(*pt){
     UART_OutChar(*pt);
     pt++;
   }
+	OS_bSignal(&UARTFree);
 }
 
 //------------UART_InUDec------------
@@ -297,6 +304,7 @@ void UART_OutUHex(uint32_t number){
 void UART_InString(char *bufPt, uint16_t max) {
 int length=0;
 char character;
+	OS_bWait(&UARTFree);
   character = UART_InChar();
   while(character != CR){
     if(character == BS){
@@ -315,6 +323,7 @@ char character;
     character = UART_InChar();
   }
   *bufPt = 0;
+	OS_bSignal(&UARTFree);
 }
 
 //---------------------OutCRLF---------------------
@@ -322,6 +331,8 @@ char character;
 // Input: none
 // Output: none
 void OutCRLF(void){
+	OS_bWait(&UARTFree);
   UART_OutChar(CR);
   UART_OutChar(LF);
+	OS_bSignal(&UARTFree);
 }
