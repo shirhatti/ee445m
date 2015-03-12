@@ -1589,7 +1589,7 @@ void Output_Color(uint32_t newColor){ // Set color of future output
 // 					string	pointer to NULL-terminated ASCII string
 // outputs: none
 void ST7735_MessageString (int device, int line, unsigned char *string) {
-	OS_bWait(&LCDFree); 
+	OS_Wait(&LCDFree); 
 	
 	// Sanitize inputs
 	if (device < 0 || device > 1) return;
@@ -1603,7 +1603,7 @@ void ST7735_MessageString (int device, int line, unsigned char *string) {
 	// Output
 	ST7735_OutString(string);
 	
-	OS_bSignal(&LCDFree);
+	OS_Signal(&LCDFree);
 }	
 
 //------------ST7735_MessageInteger------------
@@ -1614,7 +1614,7 @@ void ST7735_MessageString (int device, int line, unsigned char *string) {
 // 					value		32-bit number in unsigned decimal format
 // outputs: none
 void ST7735_MessageInteger (int device, int line, long value){
-OS_bWait(&LCDFree);	
+OS_Wait(&LCDFree);	
 
 	// Sanitize inputs
 	if (device < 0 || device > 1) return;
@@ -1627,7 +1627,7 @@ OS_bWait(&LCDFree);
 	
 	// Output
 	ST7735_OutUDec(value);
-	OS_bSignal(&LCDFree);
+	OS_Signal(&LCDFree);
 }
 
 //------------ST7735_Message-------------------
@@ -1639,7 +1639,7 @@ OS_bWait(&LCDFree);
 //  				value		32-bit number in unsigned decimal format
 // outputs: none
 void ST7735_Message (int device, int line, char *string, unsigned int num) {
-  OS_bWait(&LCDFree); 
+  OS_Wait(&LCDFree); 
 
 	// Sanitize inputs
 	if (device < 0 || device > 1) return;
@@ -1654,5 +1654,5 @@ void ST7735_Message (int device, int line, char *string, unsigned int num) {
 	ST7735_OutString((uint8_t*)string); // May need to remove cast
 	ST7735_OutUDec(num);
 	
-	OS_bSignal(&LCDFree);
+	OS_Signal(&LCDFree);
 }   

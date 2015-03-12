@@ -4,7 +4,7 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 
 // Used with Testmain2; comment out when running Testmain1
 #define WITH_SYSTICK
-
+#define TESTMAIN5
 // os.c
 // Runs on LM4F120/TM4C123
 // A very simple real time operating system with minimal features.
@@ -71,7 +71,7 @@ int32_t StartCritical(void);
 void EndCritical(int32_t primask);
 void StartOS(void);
 
-#define NUMTHREADS  10       // maximum number of threads
+#define NUMTHREADS  50       // maximum number of threads
 #define STACKSIZE   100      // number of 32-bit words in stack
 
 #define OSFIFOSIZE  16
@@ -171,16 +171,16 @@ int add_thread_sema4(Sema4Type *semaPt, uint32_t priority) {
 }
 
 int delete_thread_sema4(Sema4Type *semaPt) {
-	uint32_t priority = 0;
+	uint32_t del_priority = 0;
 	tcbType *priNode;
 	
-	for(priority = 0; priority < NUMPRI; priority++) {
-		if(semaPt->TcbPri[priority] != 0) { break; }
+	for(del_priority = 0; del_priority < NUMPRI; del_priority++) {
+		if(semaPt->TcbPri[del_priority] != 0) { break; }
 	}
-	if(priority == NUMPRI) {} // Shouldn't happen, ERROR
+	if(del_priority == NUMPRI) {} // Shouldn't happen, ERROR
 	
-	priNode = semaPt->TcbPri[priority];
-	semaPt->TcbPri[priority] = priNode->next;
+	priNode = semaPt->TcbPri[del_priority];
+	semaPt->TcbPri[del_priority] = priNode->next;
 	// Don't bother replacing priNode->next->prev
 	
 	return priNode->id;
@@ -189,14 +189,21 @@ int delete_thread_sema4(Sema4Type *semaPt) {
 int delete_thread_pri(uint32_t priority) {
   tcbType *next, *prev;
 	
+	PriCount[priority]--;
+	
 	prev = RunPt->prev;
 	next = RunPt->next;
 	
-	prev->next = next;
-	next->prev = prev;
+	if(PriCount[priority] > 0) {
+		prev->next = next;
+		next->prev = prev;
+	} 
+	else {
+		prev = 0;
+		next = 0;
+	}
 	
 	RunPtArray[priority] = prev;
-	PriCount[priority]--;
 	
 	return 1;
 }
@@ -276,9 +283,11 @@ void OS_Init(void) {
   InitPriorities();						// initial priority = 0
 #endif
   InitTimer2A(TIME_1MS);			// sleep decrementer
+#ifdef TESTMAIN5
   InitTimer3A(0xFFFFFFFF);		// OS time timer
   UART_Init();              	// initialize UART
-  Output_Init();							// initialize ST7735 LCD
+//  Output_Init();							// initialize ST7735 LCD
+#endif
   MSTime = 0;									// current OS time = 0
 	Launched = 0;
   
@@ -360,14 +369,15 @@ void OS_Signal(Sema4Type *semaPt) {
 // input:  pointer to a binary semaphore
 // output: none
 void OS_bWait(Sema4Type *semaPt) { 
-  OS_DisableInterrupts();
-  while(semaPt->Value == 0) {
-    OS_EnableInterrupts();
-	  OS_Suspend();       // run thread switcher
-	  OS_DisableInterrupts();
-  }
-  semaPt->Value = 0;
-  OS_EnableInterrupts();
+	OS_Wait(semaPt);
+//  OS_DisableInterrupts();
+//  while(semaPt->Value == 0) {
+//    OS_EnableInterrupts();
+//	  OS_Suspend();       // run thread switcher
+//	  OS_DisableInterrupts();
+//  }
+//  semaPt->Value = 0;
+//  OS_EnableInterrupts();
 } 
 
 // ******** OS_bSignal ************
@@ -376,10 +386,11 @@ void OS_bWait(Sema4Type *semaPt) {
 // input:  pointer to a binary semaphore
 // output: none
 void OS_bSignal(Sema4Type *semaPt) { 
-  int32_t status;
-  status = StartCritical();
-  semaPt->Value = 1;
-  EndCritical(status);
+	OS_Signal(semaPt);
+//  int32_t status;
+//  status = StartCritical();
+//  semaPt->Value = 1;
+//  EndCritical(status);
 } 
 
 //******** OS_AddThread *************** 
@@ -417,7 +428,7 @@ int OS_AddThread(void(*task)(void),
 	NumThreads++;
   EndCritical(status);
 	
-  return error;               // successful
+  return 1;               // successful
 }
 
 int OS_AddThread_RoundRobin(void(*task)(void), 
@@ -902,9 +913,9 @@ void OS_MailBox_Init(void) {
 // This function will be called from a foreground thread
 // It will spin/block if the MailBox contains data not yet received 
 void OS_MailBox_Send(unsigned long data) {
-	OS_bWait(&BoxFree);
+	OS_Wait(&BoxFree);
 	MailBox = data;
-	OS_bSignal(&DataValid);
+	OS_Signal(&DataValid);
 }
 
 // ******** OS_MailBox_Recv ************
@@ -916,9 +927,9 @@ void OS_MailBox_Send(unsigned long data) {
 unsigned long OS_MailBox_Recv(void) { 
 	uint32_t retVal;
 	
-	OS_bWait(&DataValid);
+	OS_Wait(&DataValid);
 	retVal = MailBox;
-	OS_bSignal(&BoxFree);
+	OS_Signal(&BoxFree);
 	
 	return retVal;
 }
@@ -992,7 +1003,7 @@ void InitTimer2A(uint32_t period) {
   TIMER2_ICR_R = TIMER_ICR_TATOCINT;
   TIMER2_IMR_R |= TIMER_IMR_TATOIM;// 6) arm timeout interrupt
 								   // 7) priority shifted to bits 31-29 for timer2A
-  NVIC_PRI5_R = (NVIC_PRI5_R&0x00FFFFFF)|(2 << 29);	
+  NVIC_PRI5_R = (NVIC_PRI5_R&0x00FFFFFF)|(1 << 29);	
   NVIC_EN0_R = NVIC_EN0_INT23;     // 8) enable interrupt 23 in NVIC
   TIMER2_TAPR_R = 0;
   TIMER2_CTL_R |= TIMER_CTL_TAEN;  // 9) enable timer2A
@@ -1035,8 +1046,11 @@ void OS_Launch(unsigned long theTimeSlice) {
 
 static int pri;
 void SysTick_Handler(void) {
+	
 	GPIO_PORTD_DATA_R ^= 0x08;
-	RunPtArray[PriLevel] = RunPtArray[PriLevel]->next;
+	if(PriCount[PriLevel] > 0) {
+		RunPtArray[PriLevel] = RunPtArray[PriLevel]->next;
+	}
 	
 	pri = 0;
 	while((pri < NUMPRI) && (PriCount[pri] == 0)) {
@@ -1046,7 +1060,7 @@ void SysTick_Handler(void) {
 	PriLevel = pri;
 	
 	while(PriLevel < NUMPRI) {
-		for(pri = 0; (pri < PriCount[PriLevel]) && RunPtArray[PriLevel]->sleepCt; pri++) {
+		for(pri = 0; (pri < PriCount[PriLevel]) && (RunPtArray[PriLevel]->sleepCt); pri++) {
 			RunPtArray[PriLevel] = RunPtArray[PriLevel]->next;
 		}
 		if(pri == PriCount[PriLevel]) {

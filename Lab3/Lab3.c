@@ -78,6 +78,7 @@ int Testmain2b(void);
 int Testmain3(void);
 int Testmain4(void);
 int Testmain5(void);
+int Testmain6(void);
 int main1(void);
 int main(void) {
 //	#ifdef MAIN1
@@ -86,7 +87,7 @@ int main(void) {
 //	Testmain2();
 //	#endif
 //	Testmain4();
-	Testmain5();
+	Testmain6();
 }
 
 void PortE_Init(void){ 
@@ -99,6 +100,15 @@ void PortE_Init(void){
   GPIO_PORTE_DEN_R |= 0x0F;     // enable digital I/O on PE3-0
   GPIO_PORTE_PCTL_R = ~0x0000FFFF;
   GPIO_PORTE_AMSEL_R &= ~0x0F;;      // disable analog functionality on PF
+	
+	SYSCTL_RCGCGPIO_R |= 8;
+	delay = SYSCTL_RCGCGPIO_R;
+	delay = SYSCTL_RCGCGPIO_R;
+	GPIO_PORTD_DIR_R = 0;
+	GPIO_PORTD_DEN_R = 0xFF;
+	GPIO_PORTD_AMSEL_R = 0;
+	GPIO_PORTD_AFSEL_R = 0;
+	GPIO_PORTD_DATA_R = 0;
 }
 
 #ifdef LAB2_2
@@ -367,7 +377,7 @@ int main1(void){
 
 //*******attach background tasks***********
   OS_AddSW1Task(&SW1Push,2);
-//  OS_AddSW2Task(&SW2Push,2);  // add this line in Lab 3
+  OS_AddSW2Task(&SW2Push,2);  // add this line in Lab 3
   ADC_Init(4);  // sequencer 3, channel 4, PD3, sampling in DAS()
 	OS_AddPeriodicThread(&DAS,PERIOD,1); // 2 kHz real time sampling of PD3
 
@@ -375,7 +385,7 @@ int main1(void){
 // create initial foreground threads
   NumCreated += OS_AddThread(&Interpreter,128,2); 
   NumCreated += OS_AddThread(&Consumer,128,1); 
-  NumCreated += OS_AddThread(&PID,128,3);  // Lab 3, make this lowest priority
+  NumCreated += OS_AddThread(&PID,128,5);  // Lab 3, make this lowest priority
  
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes
@@ -482,7 +492,7 @@ int Testmain2(void){  // Testmain2
 	GPIO_PORTD_DATA_R = 0;
   NumCreated += OS_AddThread(&Thread1b,128,2); 
   NumCreated += OS_AddThread(&Thread2b,128,2); 
-  NumCreated += OS_AddThread(&Thread3b,128,3); 
+  NumCreated += OS_AddThread(&Thread3b,128,2); //3 
   // Count1 Count2 Count3 should be equal on average
   // counts are larger than testmain1
  
@@ -498,27 +508,39 @@ void Thread1bb(void){
   for(;;){
     //PE0 ^= 0x01;       // heartbeat
     Count1++;
-		if (Count1 == 50000) {
+		if (Count1 >= 5000) {
 			OS_Signal(&Readyc);
+			Count1 = 0;
 		}
-		OS_Suspend();      // cooperative multitasking
+	//	OS_Suspend();      // cooperative multitasking
   }
 }
 void Thread2bb(void){
   Count2 = 0;
-	OS_Wait(&Readyc);	
+//	OS_Wait(&Readyc);	
   for(;;){
     //PE1 ^= 0x02;       // heartbeat
+		OS_Wait(&Readyc);	
     Count2++;
-    OS_Suspend();      // cooperative multitasking
+  //  OS_Suspend();      // cooperative multitasking
   }
 }
 
 int Testmain2b(void) {
+	volatile int delay;
+	
 	OS_Init();
 	NumCreated = 0;
-	NumCreated += OS_AddThread(&Thread1bb,128,1); 
-  NumCreated += OS_AddThread(&Thread2bb,128,2);
+	NumCreated += OS_AddThread(&Thread1bb,128,2); 
+  NumCreated += OS_AddThread(&Thread2bb,128,1);
+	
+	SYSCTL_RCGCGPIO_R |= 8;
+	delay = SYSCTL_RCGCGPIO_R;
+	GPIO_PORTD_DIR_R = 0;
+	GPIO_PORTD_DEN_R = 0xFF;
+	GPIO_PORTD_AMSEL_R = 0;
+	GPIO_PORTD_AFSEL_R = 0;
+	GPIO_PORTD_DATA_R = 0;
 	
 	OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes
@@ -642,7 +664,7 @@ void Thread4d(void){ int i;
     Count4++;
     OS_Sleep(10);
   }
-  OS_Kill();
+  OS_Kill();         
 }
 void BackgroundThread5d(void){   // called when Select button pushed
   NumCreated += OS_AddThread(&Thread4d,128,3); 
@@ -660,10 +682,10 @@ int Testmain4(void){   // Testmain4
 	GPIO_PORTD_DATA_R = 0;
   OS_AddPeriodicThread(&BackgroundThread1d,PERIOD,2);//0 
   OS_AddSW1Task(&BackgroundThread5d,2);
-	OS_AddSW2Task(&BackgroundThread5d,2);
-  NumCreated += OS_AddThread(&Interpreter,128,3);//2
+//	OS_AddSW2Task(&BackgroundThread5d,2);
+//  NumCreated += OS_AddThread(&Interpreter,128,3);//2
 	NumCreated += OS_AddThread(&Thread2d,128,3); //2
-  NumCreated += OS_AddThread(&Thread3d,128,4); 
+  NumCreated += OS_AddThread(&Thread3d,128,4);	//4 
   NumCreated += OS_AddThread(&Thread4d,128,3); 
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes
@@ -710,8 +732,10 @@ long jitter;                    // time between measured and expected, in us
 unsigned long diff;
 void Jitter(void) {
 unsigned long myId = OS_Id(); 
-  ST7735_Message(1,6,"Jitter     =",jitter); 
-  ST7735_Message(1,7,"Max Jitter =",MaxJitter);
+  ST7735_Message(1,3,"Jitter 0.1us=",MaxJitter);
+	ST7735_Message(1,4,"Difference  =",MaxDiff);
+	ST7735_Message(1,5,"StartTime   =",StartTime);
+	ST7735_Message(1,6,"StopTime    =",StopTime);
   OS_Kill();  // done, OS does not return from a Kill 
 }
 void Thread7(void){  // foreground thread
@@ -735,6 +759,9 @@ void TaskA(void){       // called every {1000, 2990us} in background
 	Count++;        // calculation finished
 	if(Count>1){    // ignore timing of first interrupt
 		diff = OS_TimeDifference(LastTime,thisTime);
+		StartTime = LastTime;
+		StopTime = thisTime;
+		MaxDiff = diff;
 		if(diff>PERIOD){
 			jitter = (diff-TIME_1MS+4)/8;  // in 0.1 usec
 		}else{
@@ -800,7 +827,7 @@ unsigned long SignalCount3;   // number of times s is signaled
 unsigned long WaitCount1;     // number of times s is successfully waited on
 unsigned long WaitCount2;     // number of times s is successfully waited on
 unsigned long WaitCount3;     // number of times s is successfully waited on
-#define MAXCOUNT 20000
+#define MAXCOUNT 2000 //20000
 void OutputThread(void){  // foreground thread
   UART_OutString("\n\rEE345M/EE380L, Lab 3 Preparation 4\n\r");
   while(SignalCount1+SignalCount2+SignalCount3<100*MAXCOUNT){
@@ -860,13 +887,13 @@ static long result;
 int Testmain6(void){      // Testmain6  Lab 3
   volatile unsigned long delay;
   OS_Init();           // initialize, disable interrupts
-	SYSCTL_RCGCGPIO_R |= 8;
-	delay = SYSCTL_RCGCGPIO_R;
-	GPIO_PORTD_DIR_R = 0;
-	GPIO_PORTD_DEN_R = 0xFF;
-	GPIO_PORTD_AMSEL_R = 0;
-	GPIO_PORTD_AFSEL_R = 0;
-	GPIO_PORTD_DATA_R = 0;
+//	SYSCTL_RCGCGPIO_R |= 8;
+//	delay = SYSCTL_RCGCGPIO_R;
+//	GPIO_PORTD_DIR_R = 0;
+//	GPIO_PORTD_DEN_R = 0xFF;
+//	GPIO_PORTD_AMSEL_R = 0;
+//	GPIO_PORTD_AFSEL_R = 0;
+//	GPIO_PORTD_DATA_R = 0;
   delay = add(3,4);
   PortE_Init();
   SignalCount1 = 0;   // number of times s is signaled
@@ -879,8 +906,8 @@ int Testmain6(void){      // Testmain6  Lab 3
   OS_AddPeriodicThread(&Signal1,(799*TIME_1MS)/1000,0);   // 0.799 ms, higher priority
   OS_AddPeriodicThread(&Signal2,(1111*TIME_1MS)/1000,1);  // 1.111 ms, lower priority
   NumCreated = 0 ;
-  NumCreated += OS_AddThread(&Thread6,128,6);    	// idle thread to keep from crashing
-  NumCreated += OS_AddThread(&OutputThread,128,2); 	// results output thread
+  NumCreated += OS_AddThread(&Thread6,128,5);    	// idle thread to keep from crashing
+  NumCreated += OS_AddThread(&OutputThread,128,2); 	// results output thread 2
   NumCreated += OS_AddThread(&Signal3,128,2); 	// signalling thread
   NumCreated += OS_AddThread(&Wait1,128,2); 	// waiting thread
   NumCreated += OS_AddThread(&Wait2,128,2); 	// waiting thread
