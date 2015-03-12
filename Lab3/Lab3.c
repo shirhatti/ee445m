@@ -87,7 +87,7 @@ int main(void) {
 //	Testmain2();
 //	#endif
 //	Testmain4();
-	Testmain6();
+	main1();
 }
 
 void PortE_Init(void){ 
@@ -490,9 +490,9 @@ int Testmain2(void){  // Testmain2
 	GPIO_PORTD_AMSEL_R = 0;
 	GPIO_PORTD_AFSEL_R = 0;
 	GPIO_PORTD_DATA_R = 0;
-  NumCreated += OS_AddThread(&Thread1b,128,2); 
+  NumCreated += OS_AddThread(&Thread1b,128,1); 
   NumCreated += OS_AddThread(&Thread2b,128,2); 
-  NumCreated += OS_AddThread(&Thread3b,128,2); //3 
+  NumCreated += OS_AddThread(&Thread3b,128,3); //3 
   // Count1 Count2 Count3 should be equal on average
   // counts are larger than testmain1
  

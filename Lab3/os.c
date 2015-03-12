@@ -286,7 +286,7 @@ void OS_Init(void) {
 #ifdef TESTMAIN5
   InitTimer3A(0xFFFFFFFF);		// OS time timer
   UART_Init();              	// initialize UART
-//  Output_Init();							// initialize ST7735 LCD
+  Output_Init();							// initialize ST7735 LCD
 #endif
   MSTime = 0;									// current OS time = 0
 	Launched = 0;
