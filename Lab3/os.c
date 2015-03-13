@@ -5,6 +5,8 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 // Used with Testmain2; comment out when running Testmain1
 #define WITH_SYSTICK
 #define TESTMAIN5
+//#define RROBIN
+//#define SPINLOCK
 // os.c
 // Runs on LM4F120/TM4C123
 // A very simple real time operating system with minimal features.
@@ -74,7 +76,7 @@ void StartOS(void);
 #define NUMTHREADS  50       // maximum number of threads
 #define STACKSIZE   100      // number of 32-bit words in stack
 
-#define OSFIFOSIZE  16
+#define OSFIFOSIZE  32
 #define NUMPRI			6				 // maximum number of priorities
 
 struct tcb{
@@ -319,6 +321,18 @@ void OS_InitSemaphore(Sema4Type *semaPt, long value) {
 // Lab3 block if less than zero
 // input:  pointer to a counting semaphore
 // output: none
+#ifdef SPINLOCK
+void OS_Wait(Sema4Type *semaPt) { 
+  OS_DisableInterrupts();
+  while(semaPt->Value <= 0) {
+    OS_EnableInterrupts();
+	  OS_Suspend();       // run thread switcher
+	  OS_DisableInterrupts();
+  }
+  semaPt->Value -= 1;
+  OS_EnableInterrupts();
+} 
+#else
 void OS_Wait(Sema4Type *semaPt) { 
   int32_t status; 
 	
@@ -335,6 +349,7 @@ void OS_Wait(Sema4Type *semaPt) {
 	
 	EndCritical(status);
 } 
+#endif
 
 // ******** OS_Signal ************
 // increment semaphore 
@@ -342,6 +357,14 @@ void OS_Wait(Sema4Type *semaPt) {
 // Lab3 wakeup blocked thread if appropriate 
 // input:  pointer to a counting semaphore
 // output: none
+#ifdef SPINLOCK
+void OS_Signal(Sema4Type *semaPt) { 
+  int32_t status;
+  status = StartCritical();
+  semaPt->Value += 1;
+  EndCritical(status);
+} 
+#else
 void OS_Signal(Sema4Type *semaPt) { 
   int32_t status, thread, priority;
 	
@@ -362,36 +385,48 @@ void OS_Signal(Sema4Type *semaPt) {
 	
   EndCritical(status);
 } 
+#endif
 
 // ******** OS_bWait ************
 // Lab2 spinlock, set to 0
 // Lab3 block if less than zero
 // input:  pointer to a binary semaphore
 // output: none
+#ifdef SPINLOCK
+void OS_bWait(Sema4Type *semaPt) { 
+  OS_DisableInterrupts();
+  while(semaPt->Value == 0) {
+    OS_EnableInterrupts();
+	  OS_Suspend();       // run thread switcher
+	  OS_DisableInterrupts();
+  }
+  semaPt->Value = 0;
+  OS_EnableInterrupts();
+}
+
+#else
 void OS_bWait(Sema4Type *semaPt) { 
 	OS_Wait(semaPt);
-//  OS_DisableInterrupts();
-//  while(semaPt->Value == 0) {
-//    OS_EnableInterrupts();
-//	  OS_Suspend();       // run thread switcher
-//	  OS_DisableInterrupts();
-//  }
-//  semaPt->Value = 0;
-//  OS_EnableInterrupts();
 } 
+#endif
 
 // ******** OS_bSignal ************
 // Lab2 spinlock, set to 1
 // Lab3 wakeup blocked thread if appropriate 
 // input:  pointer to a binary semaphore
 // output: none
+#ifdef SPINLOCK
+void OS_bSignal(Sema4Type *semaPt) { 
+  int32_t status;
+  status = StartCritical();
+  semaPt->Value = 1;
+  EndCritical(status);
+}
+#else
 void OS_bSignal(Sema4Type *semaPt) { 
 	OS_Signal(semaPt);
-//  int32_t status;
-//  status = StartCritical();
-//  semaPt->Value = 1;
-//  EndCritical(status);
 } 
+#endif
 
 //******** OS_AddThread *************** 
 // add a foregound thread to the scheduler
@@ -403,35 +438,9 @@ void OS_bSignal(Sema4Type *semaPt) {
 // In Lab 2, you can ignore both the stackSize and priority fields
 // In Lab 3, you can ignore the stackSize fields
 static uint32_t NumThreads = 0;
-int OS_AddThread(void(*task)(void), 
-   unsigned long stackSize, unsigned long priority) {		 
-	int32_t status, thread, error; 
-	 
-  status = StartCritical();
-  
-	thread = add_thread();
-	error = add_thread_pri(thread, priority);
-	
-	if(NumThreads == 0) {
-		RunPt = &tcbs[thread];     // thread 0 will run first
-		PriLevel = priority;
-	}
-	
-  tcbs[thread].status   = 0;
-  tcbs[thread].sleepCt  = 0;
-  tcbs[thread].age      = 0;
-  tcbs[thread].id       = thread;
-  tcbs[thread].priority = priority;
-	
-	SetInitialStack(thread); 
-	Stacks[thread][STACKSIZE-2] = (int32_t)(task); // PC
-	NumThreads++;
-  EndCritical(status);
-	
-  return 1;               // successful
-}
+#ifdef RROBIN
 
-int OS_AddThread_RoundRobin(void(*task)(void), 
+int OS_AddThread(void(*task)(void), 
    unsigned long stackSize, unsigned long priority) {		 
 	int32_t status, thread, prev;
 	 
@@ -461,6 +470,38 @@ int OS_AddThread_RoundRobin(void(*task)(void),
 	
   return 1;               // successful
 }
+	 
+#else
+
+int OS_AddThread(void(*task)(void), 
+   unsigned long stackSize, unsigned long priority) {		 
+	int32_t status, thread, error; 
+	 
+  status = StartCritical();
+  
+	thread = add_thread();
+	error = add_thread_pri(thread, priority);
+	
+	if(NumThreads == 0) {
+		RunPt = &tcbs[thread];     // thread 0 will run first
+		PriLevel = priority;
+	}
+	
+  tcbs[thread].status   = 0;
+  tcbs[thread].sleepCt  = 0;
+  tcbs[thread].age      = 0;
+  tcbs[thread].id       = thread;
+  tcbs[thread].priority = priority;
+	
+	SetInitialStack(thread); 
+	Stacks[thread][STACKSIZE-2] = (int32_t)(task); // PC
+	NumThreads++;
+  EndCritical(status);
+	
+  return 1;               // successful
+}
+	 
+#endif
 
 //******** OS_Id *************** 
 // returns the thread ID for the currently running thread
@@ -762,6 +803,21 @@ void OS_Sleep(unsigned long sleepTime) {
 // kill the currently running thread, release its TCB and stack
 // input:  none
 // output: none
+
+#ifdef RROBIN
+
+void OS_Kill(void) { 
+	uint32_t thread, prev;
+	thread = RunPt->id;
+	prev = find_prev(thread);
+	delete_thread(thread);
+	NumThreads--;
+	tcbs[prev].next = tcbs[thread].next;
+	OS_Suspend();
+}  
+
+#else 
+
 void OS_Kill(void) { 
 	uint32_t thread, priority; 
 	GPIO_PORTD_DATA_R ^= 0x01;
@@ -776,16 +832,7 @@ void OS_Kill(void) {
 	OS_Suspend();
 }
 
-void OS_Kill_Round_Robin(void) { 
-	uint32_t thread, prev;
-	thread = RunPt->id;
-	prev = find_prev(thread);
-	delete_thread(thread);
-	NumThreads--;
-	tcbs[prev].next = tcbs[thread].next;
-	OS_Suspend();
-}  
-
+#endif
 // ******** OS_Suspend ************
 // suspend execution of currently running thread
 // scheduler will choose another thread to execute
@@ -1044,6 +1091,20 @@ void OS_Launch(unsigned long theTimeSlice) {
   StartOS();                   // start on the first task
 }
 
+#ifdef RROBIN
+
+void SysTick_Handler(void) {	
+	NextRunPt = RunPt->next;
+	
+	while(NextRunPt->sleepCt) {
+		NextRunPt = NextRunPt->next;
+	}
+
+  NVIC_INT_CTRL_R = 0x10000000;		// trigger PendSV
+}
+
+#else 
+
 static int pri;
 void SysTick_Handler(void) {
 	
@@ -1075,12 +1136,4 @@ void SysTick_Handler(void) {
   NVIC_INT_CTRL_R = 0x10000000;		// trigger PendSV
 }
 
-void SysTick_RoundRobin(void) {	
-	NextRunPt = RunPt->next;
-	
-	while(NextRunPt->sleepCt) {
-		NextRunPt = NextRunPt->next;
-	}
-
-  NVIC_INT_CTRL_R = 0x10000000;		// trigger PendSV
-}
+#endif

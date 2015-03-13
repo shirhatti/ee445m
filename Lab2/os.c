@@ -73,7 +73,7 @@ void StartOS(void);
 
 #define NUMTHREADS  10        // maximum number of threads
 #define STACKSIZE   100      // number of 32-bit words in stack
-#define OSFIFOSIZE  16
+#define OSFIFOSIZE  4
 struct tcb{
   int32_t *sp;       // pointer to stack (valid for threads not running
   struct tcb *next;  // linked-list pointer

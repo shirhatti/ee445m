@@ -738,6 +738,7 @@ unsigned long myId = OS_Id();
 	ST7735_Message(1,6,"StopTime    =",StopTime);
   OS_Kill();  // done, OS does not return from a Kill 
 }
+
 void Thread7(void){  // foreground thread
   OS_Sleep(5000);   // 10 seconds        
   Jitter();         // print jitter information
@@ -745,10 +746,9 @@ void Thread7(void){  // foreground thread
   Jitter();         // print jitter information
   OS_Kill();
 }
+
 #define workA 500       // {5,50,500 us} work in Task A
 #define counts1us 10    // number of OS_Time counts per 1us
-
-
 
 void TaskA(void){       // called every {1000, 2990us} in background
 	static long Count = 0;
