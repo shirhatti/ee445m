@@ -374,17 +374,16 @@ void BackspacePreprocessString(char* string) {
 	int index = 0;
 	int offset = 0;
 	while (string[index+offset]) {
-		if (string[index+offset] == '\b') {
-			offset++;
+		string[index] = string[index+offset];
+		if (string[index+offset] == 0x7F) {
+			index--;
+			offset+=2;
 		}
 		else {
 			index++;
 		}
-		string[index] = string[index+offset];
-
 	}
-	//string[index] = string[index+offset];
-	string[index] = 0;
+	string[index] = string[index+offset];
 	UART_OutString("\r\n");
 }
 
