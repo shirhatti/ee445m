@@ -62,22 +62,7 @@ unsigned long JitterHistogram[JITTERSIZE]={0,};
 #define PE2  (*((volatile unsigned long *)0x40024010))
 #define PE3  (*((volatile unsigned long *)0x40024020))
 
-long data[] = { 50,50,50,50,50,
-								50,50,50,50,50,
-								50,50,50,50,50,
-								50,50,50,50,50,
-								50,50,50,50,50,
-								50,50,50,50,50
-							};
-int Testmain1(void);
-int Testmain2(void);
-int Testmain2b(void);
-int Testmain3(void);
-int Testmain4(void);
-int Testmain5(void);
-int Testmain6(void);
 int main1(void);
-							
 	
 int main(void) {
 	main1();
@@ -206,11 +191,10 @@ void SW1Push(void){
 // Called when SW2 Button pushed, Lab 3 only
 // Adds another foreground task
 // background threads execute once and return
-unsigned long pressed;
 void SW2Push(void){
   if(OS_MsTime() > 20 ){ // debounce
 		OS_Wait(&Settings);
-		pressed = 1;
+		triggered = 1;
 		OS_Signal(&Settings);
     OS_ClearMsTime();  // at least 20ms between touches
   }
@@ -247,45 +231,75 @@ void Display(void);
 // calculates FFT, sends DC component to Display
 // inputs:  none
 // outputs: none
-static unsigned long switchcount = 0;
-void Consumer(void){ 
-unsigned long data,DCcomponent;   // 12-bit raw ADC sample, 0 to 4095
-unsigned long t;                  // time in 2.5 ms
-unsigned long myId = OS_Id();
-trigger_t trigger;
+static unsigned long triggerCount = 0;
+void Consumer(void) { 
+	unsigned long data,DCcomponent;   // 12-bit raw ADC sample, 0 to 4095
+	unsigned long t;                  // time in 2.5 ms
+	unsigned long myId = OS_Id();
+	trigger_t trigger;
+	int32_t trigLevel;
+	fir_t firStatus;
+	plot_t plotType;
+		
+	enum { enabled = 1, disabled = 0 } status = enabled;
+	
   ADC_Collect(5, FS, &Producer); // start ADC sampling, channel 5, PD2, 400 Hz
   //NumCreated += OS_AddThread(&Display,128,0);
-	enum { enabled = 1, disabled = 0 } status = enabled;
+	
   while(1) {
 		PE2 = 0x04;
-		OS_Wait(&Settings);
+		
 		// check if button pressed and switch trigger
+		OS_Wait(&Settings);
 		trigger = ADCSettings.trigger;
+		trigLevel = ADCSettings.trigLevel;
+		firStatus = ADCSettings.fir;
+		plotType = ADCSettings.plot;
 		OS_Signal(&Settings);
+		
 		status = (trigger == continuous) ? enabled : disabled;
-		if (trigger == switch1 && pressed) {
-			switchcount++;
-			ST7735_PlotClear(0, 4095);
+		if (triggered == 1) {
+			triggerCount++;
+			ST7735_PlotClear(0, 511);
 			for(t = 0; t < 128; t++){   // collect 64 ADC samples
 				data = OS_Fifo_Get();    // get from producer
-				ST7735_PlotPoint(data);
+				if (plotType == time) {
+					ST7735_PlotPoint(data);
+				} 
+				else {
+					ST7735_PlotdBfs(y[t]);
+				}
 				ST7735_PlotNextErase();
 			}
+
 			OS_Wait(&Settings);
-			pressed = 0;
+			triggered = (trigger == switch1) ? 0 : 2;
 			OS_Signal(&Settings);
-			ST7735_MessageInteger(0,1, switchcount);
+			ST7735_MessageInteger(0,1, triggerCount);
 		}
-		for(t = 0; t < 64; t++){   // collect 64 ADC samples
-			data = OS_Fifo_Get();    // get from producer
-			if (status == enabled) {
-//				ST7735_PlotPoint(data);
-				ST7735_PlotBar(y[t]);
-				ST7735_PlotNextErase();
+		else {
+			for(t = 0; t < 64; t++){   // collect 64 ADC samples
+				data = OS_Fifo_Get();    // get from producer
 				
+				OS_Wait(&Settings);
+				if((trigger == threshold) && (data*3300/4095 >= ADCSettings.trigLevel) && (!triggered)) {
+					triggered = 1;
+				}
+				OS_Signal(&Settings);
+				
+				if (status == enabled) {
+					if (plotType == time) {
+						ST7735_PlotPoint(data);
+					} 
+					else {
+						ST7735_PlotdBfs(y[t]); // called 4 times 
+					}
+					ST7735_PlotNextErase();
+				}
+				x[t] = data;             // real part is 0 to 4095, imaginary part is 0
 			}
-			x[t] = data;             // real part is 0 to 4095, imaginary part is 0
 		}
+		
 		PE2 = 0x00;
 		cr4_fft_64_stm32(y,x,64);  // complex FFT of last 64 ADC values
 		DCcomponent = y[0]&0xFFFF; // Real part at frequency 0, imaginary part should be zero
@@ -311,10 +325,16 @@ unsigned long data,voltage;
     ST7735_Message(0,2,"v(mV) =",voltage);  
     PE3 = 0x00;
   } 
-  OS_Kill();  // done
+//  OS_Kill();  // done
 } 
 
 //--------------end of Task 3-----------------------------
+
+void IdleTask(void) {
+	while(1) {
+		// Count time spent in task
+	}
+}
 
 //------------------Task 4--------------------------------
 // foreground thread that runs without waiting or sleeping
@@ -369,12 +389,12 @@ void Interpreter(void);    // just a prototype, link to your interpreter
 //    i.e., x[], y[] 
 //--------------end of Task 5-----------------------------
 #define GPIO_PORTF2             (*((volatile uint32_t *)0x40025010))
-// TODO Fix this function
 void BackspacePreprocessString(char* string) {
 	int index = 0;
 	int offset = 0;
 	while (string[index+offset]) {
 		string[index] = string[index+offset];
+		// PuTTY config generates 0x7F for backspace
 		if (string[index+offset] == 0x7F) {
 			index--;
 			offset+=2;
@@ -394,6 +414,8 @@ void Interpreter(void) {
   OS_InitSemaphore(&Settings, 1);
 	ADCSettings.fir = on;
 	ADCSettings.trigger = continuous;
+	ADCSettings.trigLevel = 0;
+	ADCSettings.plot = time;
 	//******************/
 	
   while(1){
@@ -406,9 +428,6 @@ void Interpreter(void) {
   }
 }
 
-
-// Commands for graphs of voltage vs time and voltage vs frequency
-// Commands for turning on/off FIR filter
 int main1(void){ 
   PortE_Init();
 	OS_Init();           // initialize, disable interrupts
@@ -430,11 +449,8 @@ int main1(void){
   NumCreated += OS_AddThread(&Interpreter,128,2); 
   NumCreated += OS_AddThread(&Consumer,128,1); 
 	
-	//replace this with an idle task
-  NumCreated += OS_AddThread(&PID,128,5);  // Lab 3, make this lowest priority
+  NumCreated += OS_AddThread(&IdleTask,128,5);  // Lab 3, make this lowest priority
  
   OS_Launch(TIME_2MS); // doesn't return, interrupts enabled in here
   return 0;            // this never executes
 }
-
-

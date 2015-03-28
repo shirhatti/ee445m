@@ -208,6 +208,7 @@ char HelpLCD[] = "Send commands to the LCD";
 char HelpOS[] = "Send commands to the OS";
 char HelpEcho[] = "Echo command";
 char HelpSettings[] = "Modify ADC Triggering settings";
+char HelpReset[] = "Reset settings";
 
 /*******************CommandADC********************
  Send debugging commands to the ADC
@@ -284,7 +285,7 @@ void CommandLCD(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
     for (uint16_t i = 3; i < ui8Argc; i++) {
         sprintf(message, "%s %s", message, g_ppcArgv[i]);
     }
-    ST7735_MessageString(screen, line, message);
+    ST7735_MessageString(screen, line, (unsigned char*)message);
     OutCRLF(); UART_OutString(message);
 }
 
@@ -326,6 +327,7 @@ void CommandEcho(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
 
 Sema4Type Settings;
 ADCSettings_t ADCSettings;
+unsigned long triggered;
 void CommandSettings(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
 	if (ui8Argc < 2) {
 		OutCRLF();
@@ -361,20 +363,45 @@ void CommandSettings(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
 			return;
 		}
 		OS_Wait(&Settings);
+		
 		if (strcmp(g_ppcArgv[2], "switch")==0) {
 			ADCSettings.trigger = switch1;
 		} else if (strcmp(g_ppcArgv[2], "threshold")==0) {
 			if (ui8Argc < 4) {
 				OutCRLF();
-				UART_OutString("Insufficient arguments for command settings trigger threshold");
-				return;    
+				UART_OutString("Insufficient arguments for command settings trigger threshold");   
+			} else if ((g_ppcArgv[3][0] < '0') || (g_ppcArgv[3][0] > '9')) {
+				UART_OutString("Invalid threshold");
+			} else {
+				ADCSettings.trigLevel = atoi(g_ppcArgv[3]);
+				if(ADCSettings.trigLevel > 3300) {
+					UART_OutString("Threshold too high");
+					ADCSettings.trigLevel = 0;
+				} else {
+					ADCSettings.trigger = threshold;
+					triggered = 0;
+				}
 			}
-			ADCSettings.trigger = threshold;
-			ADCSettings.trigLevel = atoi(g_ppcArgv[3]);
 		} else {
 			ADCSettings.trigger = continuous;
 		}
 		
+		OS_Signal(&Settings);
+	}
+	
+	if (strcmp(g_ppcArgv[1], "plot")==0) {
+		if (ui8Argc < 3) {
+			OutCRLF();
+			UART_OutString("Insufficient arguments for command settings plot");
+			return;    
+		}
+		if (strcmp(g_ppcArgv[2], "time")!=0 && strcmp(g_ppcArgv[2], "frequency")!=0) {
+			OutCRLF();
+			UART_OutString("Invalid arguments for command settings plot");
+			return;
+		}
+		OS_Wait(&Settings);
+		ADCSettings.plot = (strcmp(g_ppcArgv[2], "time")==0) ? time : frequency;
 		OS_Signal(&Settings);
 	}
 	
@@ -385,7 +412,7 @@ void CommandSettings(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
 				UART_OutString("\r\nADC Trigger: switch1");
 				break;
 			case threshold:
-				UART_OutString("\r\nADC Trigger: threshold ");
+				UART_OutString("\r\nADC Trigger: threshold(mV) = ");
 				UART_OutUDec(ADCSettings.trigLevel);
 				break;
 			case continuous:
@@ -407,16 +434,49 @@ void CommandSettings(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
 	
 	if (strcmp(g_ppcArgv[1], "help")==0) {
 		OutCRLF();
-		UART_OutString("trigger\r\n\t1) switch\r\n\t2) threshold\r\n\t3) continuous\r\nfir\r\n\t1) on\r\n\t2) off");
+		UART_OutString("trigger\r\n\t1) switch\r\n\t2) threshold\r\n\t3) continuous"
+							 "\r\nfir\r\n\t1) on\r\n\t2) off"
+							 "\r\nplot\r\n\t1)time\r\n\t2)frequency");
 		OutCRLF();
 	}
 }
 
+void CommandReset(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
+	if (ui8Argc < 2) {
+		OutCRLF();
+		UART_OutString("Insufficient arguments for command reset");
+		return;    
+	}
+
+	if (strcmp(g_ppcArgv[1], "help")==0) {
+		OutCRLF();
+		UART_OutString("settings\r\ntrigger");
+		OutCRLF();
+	} else {
+		OS_Wait(&Settings);
+		if(strcmp(g_ppcArgv[2], "settings")==0) {
+			ADCSettings.fir = on;
+			ADCSettings.trigger = continuous;
+			ADCSettings.trigLevel = 0;
+			ADCSettings.plot = time;
+		}
+		else {
+			if(ADCSettings.trigger == threshold) {
+				triggered = 0;
+			}
+			else {
+				UART_OutString("No threshold trigger");
+			}
+		}
+		OS_Signal(&Settings);
+	}
+}
 // Command Table as defined by Tivaware
 tCmdLineEntry g_psCmdTable[] = {
     { "adc", CommandADC, HelpADC },
     { "lcd", CommandLCD, HelpLCD },
     { "os", CommandOS, HelpOS },
 		{	"echo", CommandEcho, HelpEcho},
-		{	"settings", CommandSettings, HelpSettings}
+		{	"settings", CommandSettings, HelpSettings},
+		{ "reset", CommandReset, HelpReset}
 };
