@@ -44,7 +44,7 @@ unsigned long NumCreated;   // number of foreground threads created
 unsigned long PIDWork;      // current number of PID calculations finished
 unsigned long FilterWork;   // number of digital filter calculations finished
 unsigned long NumSamples;   // incremented every ADC sample, in Producer
-#define FS 400            // producer/consumer sampling
+#define FS 15000            // producer/consumer sampling
 #define RUNLENGTH (20*FS) // display results and quit when NumSamples==RUNLENGTH
 // 20-sec finite time experiment duration 
 
@@ -89,6 +89,32 @@ void PortE_Init(void){
 	GPIO_PORTD_DATA_R = 0;
 }
 
+// FIR Filter coefficients
+const long h[51]={4,-1,-8,-14,-16,-10,-1,6,5,-3,-13,
+     -15,-8,3,5,-5,-20,-25,-8,25,46,26,-49,-159,-257,
+     984,-257,-159,-49,26,46,25,-8,-25,-20,-5,5,3,-8,
+     -15,-13,-3,5,6,-1,-10,-16,-14,-8,-1,4};
+
+// FIR filter y(n) = (h0*x(n)+h1*x(n-1)+…+h50*x(n-50))/fixed
+int32_t FIR(int32_t data) {
+	static int32_t x[102];
+	static int32_t y[102];
+	static uint32_t n = 51;
+	int32_t sum = 0;
+	uint32_t d;
+	
+	n++;
+	if(n == 102) { n = 51; }
+	
+	x[n] = x[n-51] = data;
+	for(d = 0; d < 51; d++) {
+		sum += h[d]*x[n-d];
+	}
+	y[n-51] = y[n] = sum/256;
+	
+	return y[n];
+}
+		 
 //------------------Task 1--------------------------------
 // 2 kHz sampling ADC channel 1, using software start trigger
 // background thread executed at 2 kHz
@@ -263,6 +289,7 @@ void Consumer(void) {
 			ST7735_PlotClear(0, 511);
 			for(t = 0; t < 128; t++){   // collect 64 ADC samples
 				data = OS_Fifo_Get();    // get from producer
+				if(firStatus == on) { data = FIR(data); }
 				if (plotType == time) {
 					ST7735_PlotPoint(data);
 				} 
@@ -280,6 +307,7 @@ void Consumer(void) {
 		else {
 			for(t = 0; t < 64; t++){   // collect 64 ADC samples
 				data = OS_Fifo_Get();    // get from producer
+				if(firStatus == on) { data = FIR(data); }
 				
 				OS_Wait(&Settings);
 				if((trigger == threshold) && (data*3300/4095 >= ADCSettings.trigLevel) && (!triggered)) {
@@ -447,7 +475,7 @@ int main1(void){
   NumCreated = 0 ;
 // create initial foreground threads
   NumCreated += OS_AddThread(&Interpreter,128,2); 
-  NumCreated += OS_AddThread(&Consumer,128,1); 
+  NumCreated += OS_AddThread(&Consumer,128,2); 
 	
   NumCreated += OS_AddThread(&IdleTask,128,5);  // Lab 3, make this lowest priority
  

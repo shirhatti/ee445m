@@ -76,7 +76,7 @@ void StartOS(void);
 #define NUMTHREADS  50       // maximum number of threads
 #define STACKSIZE   100      // number of 32-bit words in stack
 
-#define OSFIFOSIZE  32
+#define OSFIFOSIZE  128
 #define NUMPRI			6				 // maximum number of priorities
 
 struct tcb{
