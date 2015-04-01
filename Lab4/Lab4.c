@@ -37,6 +37,7 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 
 //*********Prototype for FFT in cr4_fft_64_stm32.s, STMicroelectronics
 void cr4_fft_64_stm32(void *pssOUT, void *pssIN, unsigned short Nbin);
+//void cr4_fft_1024_stm32(void *pssOUT, void *pssIN, unsigned short Nbin);
 //*********Prototype for PID in PID_stm32.s, STMicroelectronics
 short PID_stm32(short Error, short *Coeff);
 
@@ -44,7 +45,7 @@ unsigned long NumCreated;   // number of foreground threads created
 unsigned long PIDWork;      // current number of PID calculations finished
 unsigned long FilterWork;   // number of digital filter calculations finished
 unsigned long NumSamples;   // incremented every ADC sample, in Producer
-#define FS 15000            // producer/consumer sampling
+#define FS 12800            // producer/consumer sampling
 #define RUNLENGTH (20*FS) // display results and quit when NumSamples==RUNLENGTH
 // 20-sec finite time experiment duration 
 
@@ -90,29 +91,29 @@ void PortE_Init(void){
 }
 
 // FIR Filter coefficients
-const long h[51]={4,-1,-8,-14,-16,-10,-1,6,5,-3,-13,
-     -15,-8,3,5,-5,-20,-25,-8,25,46,26,-49,-159,-257,
-     984,-257,-159,-49,26,46,25,-8,-25,-20,-5,5,3,-8,
-     -15,-13,-3,5,6,-1,-10,-16,-14,-8,-1,4};
+const long h[51]={0,0,0,-1,-1,-2,-2,-2,-3,-2,-2,
+     -1,0,1,3,4,6,9,11,13,15,17,18,19,20,
+     20,20,19,18,17,15,13,11,9,6,4,3,1,0,
+     -1,-2,-2,-3,-2,-2,-2,-1,-1,0,0,0};
 
 // FIR filter y(n) = (h0*x(n)+h1*x(n-1)+…+h50*x(n-50))/fixed
 int32_t FIR(int32_t data) {
-	static int32_t x[102];
-	static int32_t y[102];
-	static uint32_t n = 51;
+	static int32_t m[102];
+	static int32_t n[102];
+	static uint32_t p = 51;
 	int32_t sum = 0;
 	uint32_t d;
 	
-	n++;
-	if(n == 102) { n = 51; }
+	p++;
+	if(p == 102) { p = 51; }
 	
-	x[n] = x[n-51] = data;
+	m[p] = m[p-51] = data;
 	for(d = 0; d < 51; d++) {
-		sum += h[d]*x[n-d];
+		sum += (h[d]*m[p-d]);
 	}
-	y[n-51] = y[n] = sum/256;
+	n[p-51] = n[p] = sum/256;
 	
-	return y[n];
+	return n[p];
 }
 		 
 //------------------Task 1--------------------------------
@@ -227,6 +228,19 @@ void SW2Push(void){
 }
 //--------------end of Task 2-----------------------------
 
+// Newton's method
+// s is an integer
+// sqrt(s) is an integer
+unsigned long sqrt2(unsigned long s){
+unsigned long t;         // t*t will become s
+int n;                   // loop counter to make sure it stops running
+  t = s/10+1;            // initial guess 
+  for(n = 16; n; --n){   // guaranteed to finish
+    t = ((t*t+s)/t)/2;  
+  }
+  return t; 
+}
+
 //------------------Task 3--------------------------------
 // hardware timer-triggered ADC sampling at 400Hz
 // Producer runs as part of ADC ISR
@@ -260,17 +274,19 @@ void Display(void);
 static unsigned long triggerCount = 0;
 void Consumer(void) { 
 	unsigned long data,DCcomponent;   // 12-bit raw ADC sample, 0 to 4095
-	unsigned long t;                  // time in 2.5 ms
+	unsigned long t, k, m;                  // time in 2.5 ms
 	unsigned long myId = OS_Id();
 	trigger_t trigger;
 	int32_t trigLevel;
 	fir_t firStatus;
 	plot_t plotType;
+	unsigned long mult;
 		
 	enum { enabled = 1, disabled = 0 } status = enabled;
+	k = m = 0;
 	
   ADC_Collect(5, FS, &Producer); // start ADC sampling, channel 5, PD2, 400 Hz
-  //NumCreated += OS_AddThread(&Display,128,0);
+//  NumCreated += OS_AddThread(&Display,128,2);
 	
   while(1) {
 		PE2 = 0x04;
@@ -284,19 +300,38 @@ void Consumer(void) {
 		OS_Signal(&Settings);
 		
 		status = (trigger == continuous) ? enabled : disabled;
-		if (triggered == 1) {
+		if (triggered == 1 && (trigger == switch1 || trigger == threshold)) {
 			triggerCount++;
-			ST7735_PlotClear(0, 511);
+	//		ST7735_PlotClear(0, 511);
 			for(t = 0; t < 128; t++){   // collect 64 ADC samples
 				data = OS_Fifo_Get();    // get from producer
 				if(firStatus == on) { data = FIR(data); }
 				if (plotType == time) {
 					ST7735_PlotPoint(data);
+					ST7735_PlotNextErase();
+					k = 0;
 				} 
 				else {
-					ST7735_PlotdBfs(y[t]);
+					mult = (y[k]&0xFFFF)*(y[k] >> 16);
+					mult = sqrt2(mult);
+					ST7735_PlotdBfs(mult); // called 4 times
+					ST7735_PlotNextErase();
+					k++;
+					mult = (y[k]&0xFFFF)*(y[k] >> 16);
+					mult = sqrt2(mult);
+					ST7735_PlotdBfs(mult); // called 4 times
+					ST7735_PlotNextErase();
+					k++;
+//					ST7735_PlotdBfs(y[k++]&0xFFFF);
+//					ST7735_PlotdBfsk(y[k++]&0xFFFF);
+//					ST7735_PlotdBfs(y[k++]&0xFFFF);
+//					ST7735_PlotdBfs(y[k++]&0xFFFF); // called 4 times
+//					ST7735_PlotdBfs(y[k++]&0xFFFF);
+//					ST7735_PlotdBfs(y[k++]&0xFFFF);
+//					ST7735_PlotdBfs(y[k++]&0xFFFF);
+					if(k == 64) { k = 0; }
 				}
-				ST7735_PlotNextErase();
+				
 			}
 
 			OS_Wait(&Settings);
@@ -318,12 +353,21 @@ void Consumer(void) {
 				if (status == enabled) {
 					if (plotType == time) {
 						ST7735_PlotPoint(data);
+						m = 0;
 					} 
 					else {
-						ST7735_PlotdBfs(y[t]); // called 4 times 
+						mult = (y[t]&0xFFFF)*(y[t] >> 16);
+						mult = sqrt2(mult);
+						ST7735_PlotdBfs(mult);
+//						m++;
+//						if(m == 8) { 
+//							ST7735_PlotNextErase();
+//							m = 0; 
+//						}
 					}
 					ST7735_PlotNextErase();
-				}
+				}				
+				
 				x[t] = data;             // real part is 0 to 4095, imaginary part is 0
 			}
 		}
@@ -345,14 +389,14 @@ void Consumer(void) {
 // outputs: none
 void Display(void){ 
 unsigned long data,voltage;
-  ST7735_Message(0,1,"Run length = ",(RUNLENGTH)/FS);   // top half used for Display
-  while(1) { 
-    data = OS_MailBox_Recv();
-    voltage = 3000*data/4095;               // calibrate your device so voltage is in mV
-    PE3 = 0x08;
-    ST7735_Message(0,2,"v(mV) =",voltage);  
-    PE3 = 0x00;
-  } 
+//  ST7735_Message(0,1,"Run length = ",(RUNLENGTH)/FS);   // top half used for Display
+//  while(1) { 
+//    data = OS_MailBox_Recv();
+//    voltage = 3000*data/4095;               // calibrate your device so voltage is in mV
+//    PE3 = 0x08;
+//    ST7735_Message(0,2,"v(mV) =",voltage);  
+//    PE3 = 0x00;
+//  } 
 //  OS_Kill();  // done
 } 
 
@@ -470,7 +514,7 @@ int main1(void){
 
 //*******attach background tasks***********
   OS_AddSW2Task(&SW2Push,2);  // add this line in Lab 3
-  ADC_Init(4);  // sequencer 3, channel 4, PD3, sampling in DAS()
+//  ADC_Init(4);  // sequencer 3, channel 4, PD3, sampling in DAS()
 
   NumCreated = 0 ;
 // create initial foreground threads

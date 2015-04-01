@@ -366,6 +366,7 @@ void CommandSettings(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
 		
 		if (strcmp(g_ppcArgv[2], "switch")==0) {
 			ADCSettings.trigger = switch1;
+			triggered = 0;
 		} else if (strcmp(g_ppcArgv[2], "threshold")==0) {
 			if (ui8Argc < 4) {
 				OutCRLF();
