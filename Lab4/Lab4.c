@@ -312,12 +312,14 @@ void Consumer(void) {
 					k = 0;
 				} 
 				else {
-					mult = (y[k]&0xFFFF)*(y[k] >> 16);
+					mult = (y[k]&0xFFFF)*(y[k]&0xFFFF)+(y[k] >> 16)*(y[k] >> 16);
+					//mult = (y[k]&0xFFFF)*(y[k] >> 16);
 					mult = sqrt2(mult);
 					ST7735_PlotdBfs(mult); // called 4 times
 					ST7735_PlotNextErase();
 					k++;
-					mult = (y[k]&0xFFFF)*(y[k] >> 16);
+					mult = (y[k]&0xFFFF)*(y[k]&0xFFFF)+(y[k] >> 16)*(y[k] >> 16);
+					//mult = (y[k]&0xFFFF)*(y[k] >> 16);
 					mult = sqrt2(mult);
 					ST7735_PlotdBfs(mult); // called 4 times
 					ST7735_PlotNextErase();
@@ -356,7 +358,8 @@ void Consumer(void) {
 						m = 0;
 					} 
 					else {
-						mult = (y[t]&0xFFFF)*(y[t] >> 16);
+						mult = (y[k]&0xFFFF)*(y[k]&0xFFFF)+(y[k] >> 16)*(y[k] >> 16);
+						//mult = (y[k]&0xFFFF)*(y[k] >> 16);
 						mult = sqrt2(mult);
 						ST7735_PlotdBfs(mult);
 //						m++;
