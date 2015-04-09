@@ -43,6 +43,7 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 #include "ST7735.h"
 #include "os.h"
 #include "ADCT0ATrigger.h"
+#include "efile.h"
 
 //*****************************************************************************
 //
@@ -207,6 +208,7 @@ char HelpADC[] = "Send commands to the ADC";
 char HelpLCD[] = "Send commands to the LCD";
 char HelpOS[] = "Send commands to the OS";
 char HelpEcho[] = "Echo command";
+char HelpSD[] = "SD card commands";
 
 /*******************CommandADC********************
  Send debugging commands to the ADC
@@ -325,10 +327,54 @@ void CommandEcho(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
 	UART_OutString("echo");
 }
 
+void CommandSD(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
+    if (ui8Argc < 2) {
+        OutCRLF();
+        UART_OutString("Insufficient arguments for command sd");
+        return;    
+    }
+    
+    if (strcmp(g_ppcArgv[1],"format") == 0) {
+			// Doesn't care if file in use
+			eFile_Format();
+    }
+    else if (strcmp(g_ppcArgv[1],"directory") == 0) {
+      eFile_Directory(&ST7735_OutChar);
+    }
+		else if (strcmp("print", g_ppcArgv[1]) == 0) {
+			if (ui8Argc < 3) {
+        OutCRLF();
+        UART_OutString("Insufficient arguments for command sd print");
+        return;    
+			}
+    }
+		else if (strcmp(g_ppcArgv[1],"delete") == 0) {
+			if (ui8Argc < 2) {
+        OutCRLF();
+        UART_OutString("Insufficient arguments for command sd delete");
+        return;    
+			}
+			// Call delete file
+			// error if no file with that name
+			UART_OutString("ERROR: NO FILE NAMED "); UART_OutString(g_ppcArgv[2]);
+			// error if any files currently open
+			UART_OutString("ERROR: FILES CURRENTLY OPEN. CLOSE ALL FILES AND TRY AGAIN");
+    }
+		else if (strcmp(g_ppcArgv[1],"help") == 0) {
+			OutCRLF();
+			UART_OutString("formatr\ndirectory\r\nprint\r\n\t1)FILENAME\r\ndelete\r\n\t1)FILENAME");
+			OutCRLF();
+    }
+    else {
+        UART_OutString("command sd argument not recognized");
+    }
+}
+
 // Command Table as defined by Tivaware
 tCmdLineEntry g_psCmdTable[] = {
     { "adc", CommandADC, HelpADC },
     { "lcd", CommandLCD, HelpLCD },
     { "os", CommandOS, HelpOS },
 		{	"echo", CommandEcho, HelpEcho},
+		{ "sd", CommandSD, HelpSD}
 };

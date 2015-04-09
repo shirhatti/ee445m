@@ -1,14 +1,49 @@
 // filename ************** eFile.h *****************************
 // Middle-level routines to implement a solid-state disk 
 // Jonathan W. Valvano 3/16/11
+#include <stdint.h>
+#ifndef EFILE_H
+#define EFILE_H
+typedef struct {
+	uint16_t entry[256];
+} allocationTable_t;
 
+typedef struct {
+	char fileName[14];
+	uint8_t type; // 0 indicates directory | 1 indicates file
+	uint8_t startBlock;
+} directoryEntry_t;
+
+typedef struct {
+	uint8_t size;
+	uint8_t isRootDirectory;
+	uint8_t unused[14];
+	directoryEntry_t parent;
+	directoryEntry_t self;
+	directoryEntry_t contents[29];
+} directory_t;
+
+typedef struct{
+	uint16_t filePosition;
+	char fileBuffer[512];
+	uint16_t fileBlockNumber;
+	uint16_t startBlockNumber;
+	uint8_t available; // 0 is already in use, 1 is available
+} filepointer_t;
+
+extern uint16_t currentDirectoryBlock;
+extern uint8_t Redirect;
+
+void diskError(char*, int32_t, int32_t);
+void ls(int);
 //---------- eFile_Init-----------------
 // Activate the file system, without formating
 // Input: none
 // Output: 0 if successful and 1 on failure (already initialized)
 // since this program initializes the disk, it must run with 
 //    the disk periodic task operating
-int eFile_Init(void); // initialize file system
+
+int eFile_Init(void); // initialize file system	
 
 //---------- eFile_Format-----------------
 // Erase all files, create blank directory, initialize free space manager
@@ -92,3 +127,4 @@ int eFile_RedirectToFile(char *name);
 // redirect printf data back to UART
 // Output: 0 if successful and 1 on failure (e.g., wasn't open)
 int eFile_EndRedirectToFile(void);
+#endif

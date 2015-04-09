@@ -411,11 +411,6 @@
               <FilePath>.\startup.s</FilePath>
             </File>
             <File>
-              <FileName>eDisk.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\eDisk.c</FilePath>
-            </File>
-            <File>
               <FileName>PLL.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\PLL.c</FilePath>
@@ -459,6 +454,21 @@
               <FileName>UART_FIFO.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\UART_FIFO.c</FilePath>
+            </File>
+            <File>
+              <FileName>efile.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\efile.c</FilePath>
+            </File>
+            <File>
+              <FileName>diskio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\diskio.c</FilePath>
+            </File>
+            <File>
+              <FileName>osasm.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\osasm.s</FilePath>
             </File>
           </Files>
         </Group>

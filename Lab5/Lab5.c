@@ -7,7 +7,7 @@
 // PF1/IDX1 is user input select switch
 // PE1/PWM5 is user input down switch 
 #include <stdio.h>
-#include "edisk.h"
+#include "diskio.h"
 #include "efile.h"
 
 // From Lab 4
@@ -93,9 +93,9 @@ unsigned long time;      // in 10msec,  0 to 1000
 unsigned long t=0;
   OS_ClearMsTime();    
   DataLost = 0;          // new run with no lost data 
-  UART_OutString("Robot running...");
+  ST7735_OutString("Robot running...");
   eFile_RedirectToFile("Robot");
-  UART_OutString("time(sec)\tdata(volts)\n\r");
+  printf("time(sec)\tdata(volts)\n\r");
   do{
     t++;
     time=OS_MsTime();            // 10ms resolution in this OS
@@ -105,7 +105,7 @@ unsigned long t=0;
   }
   while(time < 1000);       // change this to mean 10 seconds
   eFile_EndRedirectToFile();
-  UART_OutString("done.\n\r");
+  ST7735_OutString("done.\n\r");
   Running = 0;                // robot no longer running
   OS_Kill();
 }
@@ -150,7 +150,7 @@ void Producer(unsigned long data){
 // never blocks, never sleeps, never dies
 // inputs:  none
 // outputs: none
-unsigned long Idlecount=0;
+static unsigned long Idlecount=0;
 void IdleTask(void){ 
   while(1) { 
     Idlecount++;        // debugging 
@@ -189,7 +189,7 @@ void BackspacePreprocessString(char* string) {
 
 void Interpreter(void) {
 	char string[80];
-
+	eFile_Init();
   while(1){
     OutCRLF(); UART_OutString(">");
     UART_InString(string,79);
@@ -232,15 +232,16 @@ int realmain(void){        // lab 5 real main
 //*****************test programs*************************
 unsigned char buffer[512];
 #define MAXBLOCKS 100
-void diskError(char* errtype, unsigned long n){
-  PF2 = 0x00;      // turn LED off to indicate error
-  OS_Kill();
-}
+//void diskError(char* errtype, unsigned long n){
+//  PF2 = 0x00;      // turn LED off to indicate error
+//  OS_Kill();
+//}
 
 void TestDisk(void){  DSTATUS result;  unsigned short block;  int i; unsigned long n;
   // simple test of eDisk
-  result = eDisk_Init(0);  // initialize disk
-  if(result) diskError("eDisk_Init",result);
+//  result = eDisk_Init(0);  // initialize disk
+//  if(result) diskError("eDisk_Init",result);
+		eFile_Init();
   n = 1;    // seed
   for(block = 0; block < MAXBLOCKS; block++){
     for(i=0;i<512;i++){
@@ -248,13 +249,13 @@ void TestDisk(void){  DSTATUS result;  unsigned short block;  int i; unsigned lo
       buffer[i] = 0xFF&n;
     }
     PF1 = 0x02;
-    if(eDisk_WriteBlock(buffer,block))diskError("eDisk_WriteBlock",block); // save to disk
+//    if(eDisk_WriteBlock(buffer,block))diskError("eDisk_WriteBlock",block); // save to disk
     PF1 = 0;
   }
   n = 1;  // reseed, start over to get the same sequence
   for(block = 0; block < MAXBLOCKS; block++){
     PF3 = 0x08;
-    if(eDisk_ReadBlock(buffer,block))diskError("eDisk_ReadBlock",block); // read from disk
+ //   if(eDisk_ReadBlock(buffer,block))diskError("eDisk_ReadBlock",block); // read from disk
     PF3 = 0;
     for(i=0;i<512;i++){
       n = (16807*n)%2147483647; // pseudo random sequence
@@ -275,7 +276,7 @@ void RunTest(void){
 // SYSTICK interrupts, period established by OS_Launch
 // Timer interrupts, period established by first call to OS_AddPeriodicThread
 int testmain1(void){   // testmain1
-  OS_Init();           // initialize, disable interrupts
+	OS_Init();           // initialize, disable interrupts
 	PortE_Init();
 	PortF_Init();
 
@@ -288,35 +289,35 @@ int testmain1(void){   // testmain1
   NumCreated += OS_AddThread(&TestDisk,128,1);  
   NumCreated += OS_AddThread(&IdleTask,128,5); 
  
-  OS_Launch(10*TIME_1MS); // doesn't return, interrupts enabled in here
+  OS_Launch(2*TIME_1MS); // doesn't return, interrupts enabled in here
   return 0;               // this never executes
 }
 
 void TestFile(void){   int i; char data; 
   UART_OutString("\n\rEE345M/EE380L, Lab 5 eFile test\n\r");
   // simple test of eFile
-  if(eFile_Init())              diskError("eFile_Init",0); 
-  if(eFile_Format())            diskError("eFile_Format",0); 
-  eFile_Directory(&ST7735_OutChar);
-  if(eFile_Create("file1"))     diskError("eFile_Create",0);
-  if(eFile_WOpen("file1"))      diskError("eFile_WOpen",0);
-  for(i=0;i<1000;i++){
-    if(eFile_Write('a'+i%26))   diskError("eFile_Write",i);
-    if(i%52==51){
-      if(eFile_Write('\n'))     diskError("eFile_Write",i);  
-      if(eFile_Write('\r'))     diskError("eFile_Write",i);
-    }
-  }
-  if(eFile_WClose())            diskError("eFile_Close",0);
-  eFile_Directory(&ST7735_OutChar);
-  if(eFile_ROpen("file1"))      diskError("eFile_ROpen",0);
-  for(i=0;i<1000;i++){
-    if(eFile_ReadNext(&data))   diskError("eFile_ReadNext",i);
-    ST7735_OutChar(data);
-  }
-  if(eFile_Delete("file1"))     diskError("eFile_Delete",0);
-  eFile_Directory(&ST7735_OutChar);
-  UART_OutString("Successful test of creating a file\n\r");
+//  if(eFile_Init())              diskError("eFile_Init",0); 
+//  if(eFile_Format())            diskError("eFile_Format",0); 
+//  eFile_Directory(&ST7735_OutChar);
+//  if(eFile_Create("file1"))     diskError("eFile_Create",0);
+//  if(eFile_WOpen("file1"))      diskError("eFile_WOpen",0);
+//  for(i=0;i<1000;i++){
+//    if(eFile_Write('a'+i%26))   diskError("eFile_Write",i);
+//    if(i%52==51){
+//      if(eFile_Write('\n'))     diskError("eFile_Write",i);  
+//      if(eFile_Write('\r'))     diskError("eFile_Write",i);
+//    }
+//  }
+//  if(eFile_WClose())            diskError("eFile_Close",0);
+//  eFile_Directory(&ST7735_OutChar);
+//  if(eFile_ROpen("file1"))      diskError("eFile_ROpen",0);
+//  for(i=0;i<1000;i++){
+//    if(eFile_ReadNext(&data))   diskError("eFile_ReadNext",i);
+//    ST7735_OutChar(data);
+//  }
+//  if(eFile_Delete("file1"))     diskError("eFile_Delete",0);
+//  eFile_Directory(&ST7735_OutChar);
+//  UART_OutString("Successful test of creating a file\n\r");
   OS_Kill();
 }
 

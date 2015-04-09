@@ -59,6 +59,8 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 #include "ST7735.h"
 #include "inc/tm4c123gh6pm.h"
 #include "os.h"
+#include "efile.h"
+#include "UART.h"
 
 Sema4Type LCDFree;
 
@@ -1539,7 +1541,14 @@ void ST7735_SetTextColor(uint16_t color){
 }
 // Print a character to ST7735 LCD.
 int fputc(int ch, FILE *f){
-  ST7735_OutChar(ch);
+  if(Redirect) {
+		ST7735_OutChar(ch);
+		eFile_Write(ch);
+	}
+	else {
+		UART_OutChar(ch);
+	}
+	
   return 1;
 }
 // No input from Nokia, always return data.
