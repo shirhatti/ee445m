@@ -23,6 +23,14 @@ typedef struct {
 	directoryEntry_t contents[29];
 } directory_t;
 
+typedef struct{
+	uint16_t filePosition;
+	char fileBuffer[512];
+	uint16_t fileBlockNumber;
+	uint16_t startBlockNumber;
+	uint8_t available; // 0 is already in use, 1 is available
+} filepointer_t;
+
 extern uint16_t currentDirectoryBlock;
 
 void diskError(char*, int32_t, int32_t);

@@ -3,319 +3,11 @@
 <pre>
 <h1>µVision Build Log</h1>
 <h2>Project:</h2>
-C:\EE445M\Lab5\SDC.uvproj
+C:\EE445M\ee445m\Lab5_LCD\SDC.uvproj
 Project File Date:  04/08/2015
 
 <h2>Output:</h2>
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #177-D: variable "result" was declared but never referenced
-compiling PLL.c...
-compiling efile.c...
-efile.c(89): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(186): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(195): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(203): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(211): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(219): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(227): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(234): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=5496 RO-data=2052 RW-data=60 ZI-data=1644  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #177-D: variable "result" was declared but never referenced
-compiling PLL.c...
-compiling efile.c...
-efile.c(89): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(186): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(195): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(203): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(211): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(219): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(227): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(234): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=5760 RO-data=2052 RW-data=60 ZI-data=1644  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #177-D: variable "result" was declared but never referenced
-compiling PLL.c...
-compiling efile.c...
-efile.c(89): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(186): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(195): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(203): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(211): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(219): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(227): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(234): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=5760 RO-data=2052 RW-data=60 ZI-data=1644  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(89): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(186): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(195): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(203): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(211): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(219): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(227): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(234): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=6356 RO-data=2052 RW-data=64 ZI-data=2672  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(89): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(186): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(195): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(203): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(211): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(219): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(227): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(234): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=6564 RO-data=2052 RW-data=64 ZI-data=2672  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(89): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(186): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(195): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(203): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(211): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(219): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(227): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(234): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=6220 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(89): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(186): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(195): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(203): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(211): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(219): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(227): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(234): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=6220 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(89): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(187): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(196): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(204): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(212): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(220): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(228): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(235): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=6224 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(71): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(169): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(178): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(186): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(194): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(202): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(210): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(217): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=6224 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(71): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(169): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(178): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(186): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(194): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(202): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(210): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(217): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=6224 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(71): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(169): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(178): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(186): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(194): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(202): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(210): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(217): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=6224 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(71): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(169): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(178): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(186): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(194): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(202): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(210): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(217): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=5688 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Failed!
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(71): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(169): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(178): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(186): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(194): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(202): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(210): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(217): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=5688 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Connection failed!, error code=&d
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(71): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(169): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(178): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(186): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(194): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(202): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(210): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(217): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=5688 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
+Load "C:\\EE445M\\ee445m\\Lab5_LCD\\SDC.axf" 
 Connecting: Mode=JTAG, Speed=1000000Hz
 Erase Done.
 Programming Done.
@@ -327,18 +19,69 @@ SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
 compiling PLL.c...
 compiling efile.c...
 efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(157): error:  #268: declaration may not appear after executable statement in block
-efile.c(152): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(205): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(214): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(222): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(230): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(238): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(246): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(253): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+efile.c(192): warning:  #940-D: missing return statement at end of non-void function "eFile_WOpen"
+efile.c(219): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
+efile.c(228): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
+efile.c(236): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(244): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(253): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(304): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(311): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
 compiling diskio.c...
 compiling ST7735.c...
-".\SDC.axf" - 1 Errors, 10 Warning(s).
+linking...
+Program Size: Code=6476 RO-data=2052 RW-data=64 ZI-data=2160  
+".\SDC.axf" - 0 Errors, 10 Warning(s).
+Load "C:\\EE445M\\ee445m\\Lab5_LCD\\SDC.axf" 
+Connecting: Mode=JTAG, Speed=1000000Hz
+Erase Done.
+Programming Done.
+Verify OK.
+Rebuild target 'SDC'
+assembling startup.s...
+compiling SDCTestMain.c...
+SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
+compiling PLL.c...
+compiling efile.c...
+efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
+efile.c(192): warning:  #940-D: missing return statement at end of non-void function "eFile_WOpen"
+efile.c(219): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
+efile.c(228): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
+efile.c(236): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(244): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(253): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(305): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(312): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+compiling diskio.c...
+compiling ST7735.c...
+linking...
+Program Size: Code=6476 RO-data=2052 RW-data=64 ZI-data=2160  
+".\SDC.axf" - 0 Errors, 10 Warning(s).
+Load "C:\\EE445M\\ee445m\\Lab5_LCD\\SDC.axf" 
+Connecting: Mode=JTAG, Speed=1000000Hz
+Erase Done.
+Programming Done.
+Verify OK.
+Rebuild target 'SDC'
+assembling startup.s...
+compiling SDCTestMain.c...
+SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
+compiling PLL.c...
+compiling efile.c...
+efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
+efile.c(201): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(254): error:  #20: identifier "result" is undefined
+efile.c(254): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(266): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
+efile.c(275): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
+efile.c(283): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(291): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(300): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(352): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(359): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+compiling diskio.c...
+compiling ST7735.c...
+".\SDC.axf" - 1 Errors, 11 Warning(s).
 Target not created
 Rebuild target 'SDC'
 assembling startup.s...
@@ -347,18 +90,63 @@ SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
 compiling PLL.c...
 compiling efile.c...
 efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(157): error:  #268: declaration may not appear after executable statement in block
-efile.c(152): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(205): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(214): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(222): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(230): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(238): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(246): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(253): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+efile.c(201): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(256): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(268): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
+efile.c(277): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
+efile.c(285): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(293): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(302): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(354): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(361): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
 compiling diskio.c...
 compiling ST7735.c...
-".\SDC.axf" - 1 Errors, 10 Warning(s).
+linking...
+Program Size: Code=5704 RO-data=2052 RW-data=64 ZI-data=2680  
+".\SDC.axf" - 0 Errors, 11 Warning(s).
+Rebuild target 'SDC'
+assembling startup.s...
+compiling SDCTestMain.c...
+SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
+compiling PLL.c...
+compiling efile.c...
+efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
+efile.c(201): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(256): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(289): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+efile.c(269): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(306): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
+efile.c(314): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(322): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(331): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(383): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(390): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+compiling diskio.c...
+compiling ST7735.c...
+linking...
+Program Size: Code=5704 RO-data=2052 RW-data=64 ZI-data=3192  
+".\SDC.axf" - 0 Errors, 12 Warning(s).
+Rebuild target 'SDC'
+assembling startup.s...
+compiling SDCTestMain.c...
+SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
+compiling PLL.c...
+compiling efile.c...
+efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
+efile.c(202): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(262): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(302): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+efile.c(310): error:  #65: expected a ";"
+efile.c(311): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
+efile.c(277): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(333): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(341): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(350): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(402): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(409): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+compiling diskio.c...
+compiling ST7735.c...
+".\SDC.axf" - 1 Errors, 12 Warning(s).
 Target not created
 Rebuild target 'SDC'
 assembling startup.s...
@@ -367,135 +155,101 @@ SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
 compiling PLL.c...
 compiling efile.c...
 efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(152): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(206): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(215): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(223): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(231): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(239): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(247): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(254): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+efile.c(202): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(262): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(302): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+efile.c(310): error:  #65: expected a ";"
+efile.c(311): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
+efile.c(277): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(334): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(342): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(351): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(403): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(410): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
 compiling diskio.c...
 compiling ST7735.c...
-linking...
-Program Size: Code=6192 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 10 Warning(s).
+".\SDC.axf" - 1 Errors, 12 Warning(s).
+Target not created
+Rebuild target 'SDC'
+assembling startup.s...
+compiling SDCTestMain.c...
+SDCTestMain.c(113): error:  #65: expected a ";"
+SDCTestMain.c(122): warning:  #12-D: parsing restarts here after previous syntax error
+SDCTestMain.c(106): warning:  #177-D: variable "i" was declared but never referenced
+SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
+SDCTestMain.c(123): warning:  #77-D: this declaration has no storage class or type specifier
+SDCTestMain.c(123): error:  #92: identifier-list parameters may only be used in a function definition
+SDCTestMain.c(123): error:  #147: declaration is incompatible with "void ls(int)" (declared at line 29 of "efile.h")
+SDCTestMain.c(126): error:  #169: expected a declaration
+SDCTestMain.c(131): warning: At end of source:  #12-D: parsing restarts here after previous syntax error
+compiling PLL.c...
+compiling efile.c...
+efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
+efile.c(202): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(262): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(302): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+efile.c(277): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(334): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(342): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(351): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(403): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(410): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+compiling diskio.c...
+compiling ST7735.c...
+".\SDC.axf" - 4 Errors, 15 Warning(s).
+Target not created
+Rebuild target 'SDC'
+assembling startup.s...
+compiling SDCTestMain.c...
+SDCTestMain.c(113): error:  #65: expected a ";"
+SDCTestMain.c(122): warning:  #12-D: parsing restarts here after previous syntax error
+SDCTestMain.c(106): warning:  #177-D: variable "i" was declared but never referenced
+SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
+SDCTestMain.c(123): warning:  #77-D: this declaration has no storage class or type specifier
+SDCTestMain.c(123): error:  #92: identifier-list parameters may only be used in a function definition
+SDCTestMain.c(123): error:  #147: declaration is incompatible with "void ls(int)" (declared at line 29 of "efile.h")
+SDCTestMain.c(126): error:  #169: expected a declaration
+SDCTestMain.c(131): warning: At end of source:  #12-D: parsing restarts here after previous syntax error
+compiling PLL.c...
+compiling efile.c...
+efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
+efile.c(202): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(262): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(302): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+efile.c(277): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(334): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(342): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(351): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(403): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(410): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+compiling diskio.c...
+compiling ST7735.c...
+".\SDC.axf" - 4 Errors, 15 Warning(s).
+Target not created
 Rebuild target 'SDC'
 assembling startup.s...
 compiling SDCTestMain.c...
 SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
+SDCTestMain.c(123): warning:  #77-D: this declaration has no storage class or type specifier
+SDCTestMain.c(123): error:  #92: identifier-list parameters may only be used in a function definition
+SDCTestMain.c(123): error:  #147: declaration is incompatible with "void ls(int)" (declared at line 29 of "efile.h")
+SDCTestMain.c(126): error:  #169: expected a declaration
+SDCTestMain.c(131): warning: At end of source:  #12-D: parsing restarts here after previous syntax error
 compiling PLL.c...
 compiling efile.c...
 efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(152): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(207): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(216): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(224): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(232): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(240): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(248): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(255): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+efile.c(202): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(262): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(302): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+efile.c(277): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(334): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(342): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(351): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(403): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(410): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
 compiling diskio.c...
 compiling ST7735.c...
-linking...
-Program Size: Code=6404 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 10 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(152): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(207): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(216): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(224): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(232): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(240): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(248): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(255): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=6408 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 10 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(152): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(207): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(216): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(224): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(232): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(240): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(248): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(255): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=5704 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 10 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(152): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(207): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(216): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(224): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(232): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(240): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(248): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(255): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=5704 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 10 Warning(s).
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(163): error:  #167: argument of type "directoryEntry_t" is incompatible with parameter of type "const char *"
-efile.c(189): error:  #268: declaration may not appear after executable statement in block
-efile.c(189): warning:  #940-D: missing return statement at end of non-void function "eFile_Create"
-efile.c(189): error:  #67: expected a "}"
-efile.c(216): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(225): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(233): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(241): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(249): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(257): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(264): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-".\SDC.axf" - 3 Errors, 10 Warning(s).
+".\SDC.axf" - 3 Errors, 13 Warning(s).
 Target not created
 Rebuild target 'SDC'
 assembling startup.s...
@@ -504,17 +258,64 @@ SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
 compiling PLL.c...
 compiling efile.c...
 efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(163): error:  #167: argument of type "directoryEntry_t" is incompatible with parameter of type "const char *"
-efile.c(217): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(226): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(234): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(242): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(250): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(258): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(265): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+efile.c(202): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(262): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(302): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+efile.c(277): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(334): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(342): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(351): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(403): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(410): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
 compiling diskio.c...
 compiling ST7735.c...
-".\SDC.axf" - 1 Errors, 9 Warning(s).
+linking...
+Program Size: Code=6996 RO-data=2052 RW-data=64 ZI-data=3200  
+".\SDC.axf" - 0 Errors, 11 Warning(s).
+Rebuild target 'SDC'
+assembling startup.s...
+compiling SDCTestMain.c...
+SDCTestMain.c(126): warning:  #223-D: function "eFile_Read" declared implicitly
+SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
+SDCTestMain.c(107): warning:  #177-D: variable "ch" was declared but never referenced
+compiling PLL.c...
+compiling efile.c...
+efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
+efile.c(202): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(262): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(302): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+efile.c(277): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(334): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(342): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(351): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(403): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(410): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+compiling diskio.c...
+compiling ST7735.c...
+linking...
+.\SDC.axf: Error: L6218E: Undefined symbol eFile_Read (referred from sdctestmain.o).
+".\SDC.axf" - 1 Errors, 13 Warning(s).
+Target not created
+Rebuild target 'SDC'
+assembling startup.s...
+compiling SDCTestMain.c...
+SDCTestMain.c(127): error:  #65: expected a ";"
+SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
+compiling PLL.c...
+compiling efile.c...
+efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
+efile.c(202): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(262): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(302): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+efile.c(277): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(334): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(342): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(351): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(403): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(410): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+compiling diskio.c...
+compiling ST7735.c...
+".\SDC.axf" - 1 Errors, 11 Warning(s).
 Target not created
 Rebuild target 'SDC'
 assembling startup.s...
@@ -523,18 +324,20 @@ SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
 compiling PLL.c...
 compiling efile.c...
 efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(217): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(226): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(234): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(242): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(250): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(258): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(265): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+efile.c(202): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(262): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(302): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+efile.c(277): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(334): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(342): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(351): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(403): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(410): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
 compiling diskio.c...
 compiling ST7735.c...
 linking...
-Program Size: Code=6628 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
+Program Size: Code=7504 RO-data=2052 RW-data=64 ZI-data=3200  
+".\SDC.axf" - 0 Errors, 11 Warning(s).
 Rebuild target 'SDC'
 assembling startup.s...
 compiling SDCTestMain.c...
@@ -542,19 +345,21 @@ SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
 compiling PLL.c...
 compiling efile.c...
 efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(217): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(226): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(234): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(242): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(250): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(258): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(265): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+efile.c(202): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(262): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(302): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+efile.c(277): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(334): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(342): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(351): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(403): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(410): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
 compiling diskio.c...
 compiling ST7735.c...
 linking...
-Program Size: Code=6628 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
+Program Size: Code=7504 RO-data=2052 RW-data=64 ZI-data=3200  
+".\SDC.axf" - 0 Errors, 11 Warning(s).
+Load "C:\\EE445M\\ee445m\\Lab5_LCD\\SDC.axf" 
 Connecting: Mode=JTAG, Speed=1000000Hz
 Erase Done.
 Programming Done.
@@ -566,92 +371,21 @@ SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
 compiling PLL.c...
 compiling efile.c...
 efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(217): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(226): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(234): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(242): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(250): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(258): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(265): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+efile.c(202): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(262): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(302): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+efile.c(277): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(334): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(342): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(351): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(403): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(410): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
 compiling diskio.c...
 compiling ST7735.c...
 linking...
-Program Size: Code=6620 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 9 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(192): warning:  #940-D: missing return statement at end of non-void function "eFile_WOpen"
-efile.c(219): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(228): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(236): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(244): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(272): warning:  #128-D: loop is not reachable
-efile.c(300): error:  #268: declaration may not appear after executable statement in block
-efile.c(300): warning:  #940-D: missing return statement at end of non-void function "eFile_Delete"
-efile.c(253): warning:  #177-D: variable "blockNumber" was declared but never referenced
-efile.c(300): error:  #67: expected a "}"
-efile.c(301): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(308): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-".\SDC.axf" - 2 Errors, 12 Warning(s).
-Target not created
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(192): warning:  #940-D: missing return statement at end of non-void function "eFile_WOpen"
-efile.c(219): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(228): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(236): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(244): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(253): warning:  #177-D: variable "blockNumber" was declared but never referenced
-efile.c(302): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(309): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=6620 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 10 Warning(s).
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(192): warning:  #940-D: missing return statement at end of non-void function "eFile_WOpen"
-efile.c(219): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(228): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(236): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(244): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(253): warning:  #177-D: variable "blockNumber" was declared but never referenced
-efile.c(302): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(309): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=6620 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 10 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
+Program Size: Code=7716 RO-data=2052 RW-data=64 ZI-data=3200  
+".\SDC.axf" - 0 Errors, 11 Warning(s).
+Load "C:\\EE445M\\ee445m\\Lab5_LCD\\SDC.axf" 
 Connecting: Mode=JTAG, Speed=1000000Hz
 Erase Done.
 Programming Done.
@@ -662,21 +396,64 @@ compiling SDCTestMain.c...
 SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
 compiling PLL.c...
 compiling efile.c...
-efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(192): warning:  #940-D: missing return statement at end of non-void function "eFile_WOpen"
-efile.c(219): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(228): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(236): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(244): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(253): warning:  #177-D: variable "blockNumber" was declared but never referenced
-efile.c(302): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(309): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+efile.c(87): warning:  #177-D: variable "i" was declared but never referenced
+efile.c(194): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(254): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(294): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+efile.c(269): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(326): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(334): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(343): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(395): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(402): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
 compiling diskio.c...
 compiling ST7735.c...
 linking...
-Program Size: Code=6464 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 10 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
+Program Size: Code=7716 RO-data=2052 RW-data=64 ZI-data=3200  
+".\SDC.axf" - 0 Errors, 11 Warning(s).
+Rebuild target 'SDC'
+assembling startup.s...
+compiling SDCTestMain.c...
+SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
+compiling PLL.c...
+compiling efile.c...
+efile.c(87): warning:  #177-D: variable "i" was declared but never referenced
+efile.c(198): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(258): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(298): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+efile.c(273): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(330): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(338): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(347): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(399): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(406): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+compiling diskio.c...
+compiling ST7735.c...
+linking...
+Program Size: Code=7736 RO-data=2052 RW-data=64 ZI-data=3200  
+".\SDC.axf" - 0 Errors, 11 Warning(s).
+Rebuild target 'SDC'
+assembling startup.s...
+compiling SDCTestMain.c...
+SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
+compiling PLL.c...
+compiling efile.c...
+efile.c(87): warning:  #177-D: variable "i" was declared but never referenced
+efile.c(198): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(258): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(298): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+efile.c(273): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(330): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(338): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(347): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(399): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(406): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+compiling diskio.c...
+compiling ST7735.c...
+linking...
+Program Size: Code=7736 RO-data=2052 RW-data=64 ZI-data=3200  
+".\SDC.axf" - 0 Errors, 11 Warning(s).
+Load "C:\\EE445M\\ee445m\\Lab5_LCD\\SDC.axf" 
 Connecting: Mode=JTAG, Speed=1000000Hz
 Erase Done.
 Programming Done.
@@ -687,46 +464,27 @@ compiling SDCTestMain.c...
 SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
 compiling PLL.c...
 compiling efile.c...
-efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(192): warning:  #940-D: missing return statement at end of non-void function "eFile_WOpen"
-efile.c(219): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(228): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(236): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(244): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(253): warning:  #177-D: variable "blockNumber" was declared but never referenced
-efile.c(302): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(309): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+efile.c(87): warning:  #177-D: variable "i" was declared but never referenced
+efile.c(198): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(258): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+efile.c(298): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+efile.c(273): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(330): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
+efile.c(338): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+efile.c(347): warning:  #177-D: variable "blockNumber" was declared but never referenced
+efile.c(399): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+efile.c(406): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
 compiling diskio.c...
 compiling ST7735.c...
 linking...
-Program Size: Code=5704 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 10 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
+Program Size: Code=7544 RO-data=2052 RW-data=64 ZI-data=3200  
+".\SDC.axf" - 0 Errors, 11 Warning(s).
+Load "C:\\EE445M\\ee445m\\Lab5_LCD\\SDC.axf" 
 Connecting: Mode=JTAG, Speed=1000000Hz
 Erase Done.
 Programming Done.
 Verify OK.
-Rebuild target 'SDC'
-assembling startup.s...
-compiling SDCTestMain.c...
-SDCTestMain.c(106): warning:  #550-D: variable "result" was set but never used
-compiling PLL.c...
-compiling efile.c...
-efile.c(85): warning:  #177-D: variable "i" was declared but never referenced
-efile.c(192): warning:  #940-D: missing return statement at end of non-void function "eFile_WOpen"
-efile.c(219): warning:  #940-D: missing return statement at end of non-void function "eFile_ROpen"
-efile.c(228): warning:  #940-D: missing return statement at end of non-void function "eFile_ReadNext"
-efile.c(236): warning:  #940-D: missing return statement at end of non-void function "eFile_RClose"
-efile.c(244): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
-efile.c(253): warning:  #177-D: variable "blockNumber" was declared but never referenced
-efile.c(302): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
-efile.c(309): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
-compiling diskio.c...
-compiling ST7735.c...
-linking...
-Program Size: Code=6464 RO-data=2052 RW-data=64 ZI-data=2160  
-".\SDC.axf" - 0 Errors, 10 Warning(s).
-Load "C:\\EE445M\\Lab5\\SDC.axf" 
+Load "C:\\EE445M\\ee445m\\Lab5_LCD\\SDC.axf" 
 Connecting: Mode=JTAG, Speed=1000000Hz
 Erase Done.
 Programming Done.

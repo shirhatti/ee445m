@@ -43,6 +43,8 @@ const uint16_t allocationTableBlock = 0x00FF;
 
 uint16_t currentDirectoryBlock;
 
+filepointer_t writeFile, readFile;
+
 void printDirectoryEntry(directoryEntry_t entry, int lineNumber) {
 	ST7735_SetCursor(0, lineNumber);
 	if (entry.type)	ST7735_DrawString(0, lineNumber, entry.fileName, ST7735_Color565(255, 0, 0));
@@ -102,6 +104,10 @@ int eFile_Init(void) {
 	// Init the allocation table
 	allocationTable = *((allocationTable_t *) tempBuffer);
 	currentDirectoryBlock = rootDirectoryBlock;
+	
+	// Set read and write as available
+	writeFile.available = 1;
+	readFile.available = 1;
 	
 	return 0;	
 }
@@ -182,20 +188,58 @@ int eFile_Create( char name[]) {
 	return 0;
 }
 
-
 //---------- eFile_WOpen-----------------
 // Open the file, read into RAM last block
 // Input: file name is a single ASCII letter
 // Output: 0 if successful and 1 on failure (e.g., trouble writing to flash)
 int eFile_WOpen(char name[]) {
 	// open a file for writing
+	int i, result, index;
+	uint16_t blockNumber;
+	directory_t dir;
+
+	//check if another file in use
+	if (!writeFile.available) {
+		diskError("Write file already open", result, currentDirectoryBlock);
+	}
+	// open directory
+	result = disk_read (0, tempBuffer, currentDirectoryBlock,1);
+	dir = *((directory_t *) tempBuffer);
+	if(result) diskError("disk_read ", result, currentDirectoryBlock); // read from disk
+	
+	//check if file exists
+	for (i =0; i < dir.size; i++) {
+		if (strcmp(dir.contents[i].fileName, name)==0) {
+			index = i;
+			break;
+		}
+	}
+	if (i == dir.size) {
+		ST7735_DrawString(0, 0, "File not found", ST7735_Color565(255, 0, 0));
+		return 1;
+	}
+	
+	writeFile.filePosition = 0;
+	writeFile.fileBlockNumber = dir.contents[index].startBlock;
+	writeFile.startBlockNumber = dir.contents[index].startBlock;
+	writeFile.available = 0;
+	
+	return 0;
+	
 }	
 
 //---------- eFile_Write-----------------
 // save at end of the open file
 // Input: data to be saved
 // Output: 0 if successful and 1 on failure (e.g., trouble writing to flash)
-int eFile_Write( char data);  
+int eFile_Write( char data) {
+	if (writeFile.filePosition == 512) {
+		diskError("Sector full", 1, writeFile.fileBlockNumber); // read from disk
+	}
+	writeFile.fileBuffer[writeFile.filePosition] = data;
+	writeFile.filePosition++;
+	return 0;
+}	
 
 //---------- eFile_Close-----------------
 // Deactivate the file system
@@ -208,14 +252,58 @@ int eFile_Close(void);
 // close the file, left disk in a state power can be removed
 // Input: none
 // Output: 0 if successful and 1 on failure (e.g., trouble writing to flash)
-int eFile_WClose(void); // close the file for writing
+int eFile_WClose(void) {
+	int result;
+	
+	result = disk_write(0, writeFile.fileBuffer, writeFile.fileBlockNumber, 1);
+	if(result) diskError("disk_write ", result, writeFile.fileBlockNumber); // read from disk
+	
+	writeFile.available = 1;
+	
+	return 0;
+}
 
 //---------- eFile_ROpen-----------------
 // Open the file, read first block into RAM 
 // Input: file name is a single ASCII letter
 // Output: 0 if successful and 1 on failure (e.g., trouble read to flash)
 int eFile_ROpen( char name[]){
-	// open a file for reading 
+	// open a file for reading
+	int i, result, index;
+	uint16_t blockNumber;
+	directory_t dir;
+
+	//check if another file in use
+	if (!readFile.available) {
+		diskError("Write file already open", result, currentDirectoryBlock);
+	}
+	
+	// open directory
+	result = disk_read (0, tempBuffer, currentDirectoryBlock,1);
+	dir = *((directory_t *) tempBuffer);
+	if(result) diskError("disk_read ", result, currentDirectoryBlock); // read from disk
+	
+	//check if file exists
+	for (i =0; i < dir.size; i++) {
+		if (strcmp(dir.contents[i].fileName, name)==0) {
+			index = i;
+			break;
+		}
+	}
+	if (i == dir.size) {
+		ST7735_DrawString(0, 0, "File not found", ST7735_Color565(255, 0, 0));
+		return 1;
+	}
+	
+	result = disk_read(0, readFile.fileBuffer, dir.contents[index].startBlock, 1);
+	if(result) diskError("disk_write ", result, writeFile.fileBlockNumber); // read from disk
+	
+	readFile.filePosition = 0;
+	readFile.fileBlockNumber = dir.contents[index].startBlock;
+	readFile.startBlockNumber = dir.contents[index].startBlock;
+	readFile.available = 0;
+	
+	return 0;
 }
    
 //---------- eFile_ReadNext-----------------
@@ -224,7 +312,12 @@ int eFile_ROpen( char name[]){
 // Output: return by reference data
 //         0 if successful and 1 on failure (e.g., end of file)
 int eFile_ReadNext( char *pt) {
-	// get next byte 
+	if (readFile.filePosition == 512) {
+		diskError("End of block", 1, readFile.fileBlockNumber); // read from disk
+	}
+	*pt = readFile.fileBuffer[readFile.filePosition];
+	readFile.filePosition++;
+	return 0;
 }
                               
 //---------- eFile_RClose-----------------
@@ -233,6 +326,7 @@ int eFile_ReadNext( char *pt) {
 // Output: 0 if successful and 1 on failure (e.g., wasn't open)
 int eFile_RClose(void) {
 	// close the file for writing
+	readFile.available = 1;
 }
 
 //---------- eFile_Directory-----------------
@@ -249,7 +343,7 @@ int eFile_Directory(void(*fp)(unsigned char)) {
 // Output: 0 if successful and 1 on failure (e.g., trouble writing to flash)
 int eFile_Delete( char name[]) {
 	// remove this file
-	int i, result, index;
+	int i, result, index, temp;
 	uint16_t blockNumber;
 	directory_t dir;
 	
@@ -264,17 +358,20 @@ int eFile_Delete( char name[]) {
 			index = i;
 			break;
 		}
+	}
+	if (i == dir.size) {
 		ST7735_DrawString(0, 0, "File not found", ST7735_Color565(255, 0, 0));
 		return 1;
 	}
 	
 		
 	//clear entries from allocation table
-	while(allocationTable.entry[index] != 0) {
-		i = allocationTable.entry[index];
-		allocationTable.entry[index] = 0;
-		index = i;
-		if (index == 0xFFFF) break;
+	temp = index;
+	while(allocationTable.entry[temp] != 0) {
+		i = allocationTable.entry[temp];
+		allocationTable.entry[temp] = 0;
+		temp = i;
+		if (temp == 0xFFFF) break;
 	}
 	
 	// update directory

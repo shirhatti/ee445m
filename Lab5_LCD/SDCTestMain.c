@@ -103,16 +103,32 @@ void PortF_Init(void){  unsigned long volatile delay;
 }
 
 int main(void){ 
-	int i=0, result = 0;               
+	int i=0, result = 0;
+	char ch;
   PLL_Init();    // bus clock at 80 MHz
   PortF_Init();  // LaunchPad switches and LED
   PF2 = 0x04;    // turn blue LED on
 	Output_Init();
 	result = eFile_Init();
-	//eFile_Format();
-	//ls(0);
-	eFile_Delete("another_file");
+	eFile_Create("file1");
 	ls(currentDirectoryBlock);
+	eFile_WOpen("file1");
+//  for(i=0;i<100;i++){
+//		eFile_Write('a'+i%26);
+//		if(i%15==15){
+//      eFile_Write('\n');  
+//      eFile_Write('\r');
+//    }
+//	}
+//	eFile_WClose();
+	eFile_ROpen("file1");
+	ST7735_SetCursor(0, 0);
+  for(i=0;i<100;i++){
+		eFile_ReadNext(&ch);
+		ST7735_OutChar(ch);
+	}
+	eFile_RClose();
+	//ls(currentDirectoryBlock);
 	
 // *******************unformatted file tests********************
   while(1){
