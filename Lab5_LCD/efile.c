@@ -33,7 +33,7 @@ void diskError(char *errtype, int32_t code, int32_t block){
   ST7735_DrawString(0, 2, "Block:", ST7735_Color565(255, 0, 0));
   ST7735_SetCursor(7, 2);
   ST7735_OutUDec(block);
-  while(1){};
+	while(1) {};
 }
 
 allocationTable_t allocationTable;
@@ -207,6 +207,7 @@ int eFile_WOpen(char name[]) {
 	dir = *((directory_t *) tempBuffer);
 	if(result) diskError("disk_read ", result, currentDirectoryBlock); // read from disk
 	
+	
 	//check if file exists
 	for (i =0; i < dir.size; i++) {
 		if (strcmp(dir.contents[i].fileName, name)==0) {
@@ -217,6 +218,10 @@ int eFile_WOpen(char name[]) {
 	if (i == dir.size) {
 		ST7735_DrawString(0, 0, "File not found", ST7735_Color565(255, 0, 0));
 		return 1;
+	}
+	
+	if (!readFile.available && readFile.startBlockNumber == dir.contents[index].startBlock) {
+		diskError("file already open", result, currentDirectoryBlock);
 	}
 	
 	writeFile.filePosition = 0;
@@ -233,8 +238,25 @@ int eFile_WOpen(char name[]) {
 // Input: data to be saved
 // Output: 0 if successful and 1 on failure (e.g., trouble writing to flash)
 int eFile_Write( char data) {
+	int blockNumber, result;
 	if (writeFile.filePosition == 512) {
-		diskError("Sector full", 1, writeFile.fileBlockNumber); // read from disk
+		// Get new block
+		blockNumber = nextAvailableBlock();
+		
+		// Update allocation table
+		allocationTable.entry[writeFile.fileBlockNumber] = blockNumber;
+		allocationTable.entry[blockNumber] = 0xFFFF;
+		
+		// Write to disk
+		result = disk_write (0,(uint8_t *)&allocationTable, allocationTableBlock,1);
+		if(result) diskError("disk_write ", result, allocationTableBlock);
+		
+		result = disk_write(0, writeFile.fileBuffer, writeFile.fileBlockNumber, 1);
+		if(result) diskError("disk_write ", result, writeFile.fileBlockNumber); // read from disk
+		
+		// Update file pointer
+		writeFile.fileBlockNumber = blockNumber;
+		writeFile.filePosition = 0;
 	}
 	writeFile.fileBuffer[writeFile.filePosition] = data;
 	writeFile.filePosition++;
@@ -290,13 +312,22 @@ int eFile_ROpen( char name[]){
 			break;
 		}
 	}
+	
+	if (!writeFile.available && writeFile.startBlockNumber == dir.contents[index].startBlock) {
+		diskError("Write file already open", result, currentDirectoryBlock);
+	}
+	
 	if (i == dir.size) {
 		ST7735_DrawString(0, 0, "File not found", ST7735_Color565(255, 0, 0));
 		return 1;
 	}
 	
+	if (!writeFile.available && writeFile.startBlockNumber == dir.contents[index].startBlock) {
+		diskError("Write file already open", result, currentDirectoryBlock);
+	}
+	
 	result = disk_read(0, readFile.fileBuffer, dir.contents[index].startBlock, 1);
-	if(result) diskError("disk_write ", result, writeFile.fileBlockNumber); // read from disk
+	if(result) diskError("disk_read ", result, writeFile.fileBlockNumber); // read from disk
 	
 	readFile.filePosition = 0;
 	readFile.fileBlockNumber = dir.contents[index].startBlock;
@@ -312,8 +343,20 @@ int eFile_ROpen( char name[]){
 // Output: return by reference data
 //         0 if successful and 1 on failure (e.g., end of file)
 int eFile_ReadNext( char *pt) {
+	int blockNumber, result;
 	if (readFile.filePosition == 512) {
-		diskError("End of block", 1, readFile.fileBlockNumber); // read from disk
+		
+		blockNumber = allocationTable.entry[readFile.fileBlockNumber];
+		if (blockNumber == 0xFFFF) diskError("end of file", 1, readFile.fileBlockNumber); // read from disk
+		
+		// Load next block
+		result = disk_read(0, readFile.fileBuffer, blockNumber, 1);
+		if(result) diskError("disk_read ", result, writeFile.fileBlockNumber); // read from disk
+		
+		// Update file pointer
+		readFile.filePosition = 0;
+		readFile.fileBlockNumber = blockNumber;
+		
 	}
 	*pt = readFile.fileBuffer[readFile.filePosition];
 	readFile.filePosition++;
@@ -327,6 +370,7 @@ int eFile_ReadNext( char *pt) {
 int eFile_RClose(void) {
 	// close the file for writing
 	readFile.available = 1;
+	return 0;
 }
 
 //---------- eFile_Directory-----------------
@@ -344,7 +388,6 @@ int eFile_Directory(void(*fp)(unsigned char)) {
 int eFile_Delete( char name[]) {
 	// remove this file
 	int i, result, index, temp;
-	uint16_t blockNumber;
 	directory_t dir;
 	
 	// open directory

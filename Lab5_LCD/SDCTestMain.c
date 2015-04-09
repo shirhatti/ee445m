@@ -102,38 +102,89 @@ void PortF_Init(void){  unsigned long volatile delay;
   GPIO_PORTF_AMSEL_R = 0;      // disable analog functionality on PF
 }
 
+void test1(void);
+
 int main(void){ 
-	int i=0, result = 0;
+	int i=0;
 	char ch;
   PLL_Init();    // bus clock at 80 MHz
   PortF_Init();  // LaunchPad switches and LED
   PF2 = 0x04;    // turn blue LED on
 	Output_Init();
-	result = eFile_Init();
-	eFile_Create("file1");
-	ls(currentDirectoryBlock);
-	eFile_WOpen("file1");
-//  for(i=0;i<100;i++){
-//		eFile_Write('a'+i%26);
-//		if(i%15==15){
-//      eFile_Write('\n');  
-//      eFile_Write('\r');
-//    }
-//	}
-//	eFile_WClose();
-	eFile_ROpen("file1");
-	ST7735_SetCursor(0, 0);
-  for(i=0;i<100;i++){
-		eFile_ReadNext(&ch);
-		ST7735_OutChar(ch);
-	}
-	eFile_RClose();
-	//ls(currentDirectoryBlock);
-	
+	test1();
 // *******************unformatted file tests********************
   while(1){
     //SimpleUnformattedTest();
     i = i + 1;
   }
 // ****************end of unformatted file tests****************
+}
+
+void test1() {
+	int i, result = 0, x=0, y = 0;
+	char ch;
+	result = eFile_Init();
+//	result = eFile_Format();
+//	eFile_Create("file1");
+//	ls(currentDirectoryBlock);
+//	eFile_WOpen("file1");
+//  for(i=0;i<600;i++){
+//		eFile_Write('a'+i%26);
+//		if(i%15==15){
+//      eFile_Write('\n');  
+//      eFile_Write('\r');
+//    }
+//	}
+//	eFile_Write('\0');
+//	eFile_WClose();
+//	eFile_ROpen("file1");
+//	ST7735_SetCursor(0, 0);
+//	Output_Clear();
+//  while(1){
+//		
+//		eFile_ReadNext(&ch);
+//		if (ch == '\0') break;
+//		ST7735_DrawChar(x, y, ch, ST7735_Color565(255, 255, 0), 0, 1);
+//		x = x + 6;
+//		if(x > 122){
+//			x = 0;                          // start over on the next line
+//			y = y + 10;
+//		}
+//		if(y > 150){
+//			y = 10;                         // the screen is full
+//		}
+//		//ST7735_OutChar(ch);
+//	}
+//	eFile_RClose();
+//	Output_Clear();
+//	ls(currentDirectoryBlock);
+//	Output_Clear();
+//	//eFile_Delete("file1");
+//	ls(currentDirectoryBlock);
+//	Output_Clear();
+	eFile_ROpen("file1");
+	eFile_WOpen("file1");
+	eFile_Write('t');eFile_Write('e');eFile_Write('s');eFile_Write('t');eFile_Write('\0');
+	eFile_WClose();
+	eFile_RClose();
+	eFile_ROpen("file2");
+	ST7735_SetCursor(0, 0);
+	Output_Clear();
+	x=0;y=0;
+  while(1){
+		
+		eFile_ReadNext(&ch);
+		if (ch == '\0') break;
+		ST7735_DrawChar(x, y, ch, ST7735_Color565(255, 255, 0), 0, 1);
+		x = x + 6;
+		if(x > 122){
+			x = 0;                          // start over on the next line
+			y = y + 10;
+		}
+		if(y > 150){
+			y = 10;                         // the screen is full
+		}
+		ST7735_OutChar(ch);
+	}
+	eFile_RClose();
 }

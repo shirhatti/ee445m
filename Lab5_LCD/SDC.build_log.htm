@@ -3,20 +3,56 @@
 <pre>
 <h1>µVision Build Log</h1>
 <h2>Project:</h2>
-D:\Dropbox\ArmBook\LaunchPad\LaunchPadware\SDC_4F120\SDC.uvproj
-Project File Date:  03/16/2014
+C:\ee445m\Lab5_LCD\SDC.uvproj
+Project File Date:  04/09/2015
 
 <h2>Output:</h2>
-Build target 'SDC'
+Rebuild target 'SDC'
 assembling startup.s...
 compiling SDCTestMain.c...
-compiling eDisk.c...
+SDCTestMain.c(109): warning:  #177-D: variable "ch" was declared but never referenced
+        char ch;
+SDCTestMain.c(190): warning:  #1-D: last line of file ends without a newline
+  }
+SDCTestMain.c(124): warning:  #177-D: variable "i" was declared but never referenced
+        int i, result = 0, x=0, y = 0;
+SDCTestMain.c(124): warning:  #550-D: variable "result" was set but never used
+        int i, result = 0, x=0, y = 0;
+SDCTestMain.c: 4 warnings, 0 errors
 compiling PLL.c...
+compiling efile.c...
+efile.c(87): warning:  #177-D: variable "i" was declared but never referenced
+        int i, result;
+efile.c(198): warning:  #177-D: variable "blockNumber" was declared but never referenced
+        uint16_t blockNumber;
+efile.c(254): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+                result = disk_write(0, writeFile.fileBuffer, writeFile.fileBlockNumber, 1);
+efile.c(280): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const BYTE *"
+        result = disk_write(0, writeFile.fileBuffer, writeFile.fileBlockNumber, 1);
+efile.c(329): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+        result = disk_read(0, readFile.fileBuffer, dir.contents[index].startBlock, 1);
+efile.c(295): warning:  #177-D: variable "blockNumber" was declared but never referenced
+        uint16_t blockNumber;
+efile.c(353): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "BYTE *"
+                result = disk_read(0, readFile.fileBuffer, blockNumber, 1);
+efile.c(382): warning:  #940-D: missing return statement at end of non-void function "eFile_Directory"
+  }
+efile.c(442): warning:  #940-D: missing return statement at end of non-void function "eFile_RedirectToFile"
+  }
+efile.c(449): warning:  #940-D: missing return statement at end of non-void function "eFile_EndRedirectToFile"
+  }
+efile.c: 10 warnings, 0 errors
+compiling diskio.c...
+compiling ST7735.c...
 linking...
-Program Size: Code=3536 RO-data=32 RW-data=8 ZI-data=1632  
-".\SDC.axf" - 0 Error(s), 0 Warning(s).
-Clean started: Project: 'SDC'
-   deleting intermediate output files for target 'SDC'
-</pre>
-</body>
-</html>
+Program Size: Code=7752 RO-data=2052 RW-data=64 ZI-data=3200  
+".\SDC.axf" - 0 Error(s), 14 Warning(s).
+Load "C:\\ee445m\\Lab5_LCD\\SDC.axf" 
+Connecting: Mode=JTAG, Speed=1000000Hz
+Erase Done.
+Programming Done.
+Verify OK.
+0Hz
+Erase Done.
+Programming Done.
+Verify OK.
