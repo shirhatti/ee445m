@@ -25,6 +25,22 @@
 #ifndef __CMDLINE_H__
 #define __CMDLINE_H__
 
+#include "os.h"
+extern Sema4Type Settings;
+
+typedef enum {on = 1, off = 0} fir_t;
+typedef enum {switch1 = 0, threshold = 1, continuous = 2} trigger_t;
+typedef enum {time = 0, frequency = 1} plot_t;
+
+typedef struct {
+	fir_t fir;
+	trigger_t trigger;
+	long trigLevel;
+	plot_t plot;
+} ADCSettings_t;
+extern ADCSettings_t ADCSettings; 
+
+extern unsigned long triggered;
 //*****************************************************************************
 //
 // If building with a C++ compiler, make all of the definitions in this header

@@ -637,7 +637,7 @@ void Timer5_Init(void){
   TIMER5_TAPR_R = 0;               // 5) bus clock resolution
   TIMER5_ICR_R = 0x00000001;       // 6) clear timer5A timeout flag
   TIMER5_IMR_R = 0x00000001;       // 7) arm timeout interrupt
-  NVIC_PRI23_R = (NVIC_PRI23_R&0xFFFFFF00)|0x00000020; // 8) priority 1
+  NVIC_PRI23_R = (NVIC_PRI23_R&0xFFFFFF00)|0x00000040; // 8) priority 2
 // interrupts enabled in the main program after all devices initialized
 // vector number 108, interrupt number 92
   NVIC_EN2_R = 0x10000000;         // 9) enable interrupt 92 in NVIC

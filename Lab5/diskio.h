@@ -41,6 +41,8 @@ typedef enum {
 // Outputs: status (see DSTATUS)
 DSTATUS disk_initialize(BYTE drv);
 
+void disk_timerproc (void);
+	
 /*-----------------------------------------------------------------------*/
 /* Get disk status                                                       */
 /*-----------------------------------------------------------------------*/

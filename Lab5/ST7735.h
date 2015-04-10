@@ -23,15 +23,19 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
 // ST7735.h
 // Runs on LM4F120/TM4C123
 // Low level drivers for the ST7735 160x128 LCD based off of
-// the file described above.
+// the file described above.  Further modified for simultaneous
+// use of the SD card (CS on PD7) and ST7735 LCD (CS on PA3).
+//    16-bit color, 128 wide by 160 high LCD
 // Daniel Valvano
-// September 12, 2013
+// January 13, 2015
+// Augmented 7/17/2014 to have a simple graphics facility
+// Tested with LaunchPadDLL.dll simulator 9/2/2014
 
 /* This example accompanies the book
    "Embedded Systems: Real Time Interfacing to Arm Cortex M Microcontrollers",
-   ISBN: 978-1463590154, Jonathan Valvano, copyright (c) 2013
+   ISBN: 978-1463590154, Jonathan Valvano, copyright (c) 2014
 
- Copyright 2013 by Jonathan W. Valvano, valvano@mail.utexas.edu
+ Copyright 2014 by Jonathan W. Valvano, valvano@mail.utexas.edu
     You may use, edit, run or distribute this file
     as long as the above copyright notice remains
  THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, WHETHER EXPRESS, IMPLIED
@@ -44,12 +48,12 @@ Modified by Sourabh Shirhatti and Nelson Wu for EE 445M, Spring 2015
  */
 
 // Backlight (pin 10) connected to +3.3 V
-// MISO (pin 9) unconnected
+// MISO (pin 9) connected to PA4 (SSI0Rx)
 // SCK (pin 8) connected to PA2 (SSI0Clk)
 // MOSI (pin 7) connected to PA5 (SSI0Tx)
-// TFT_CS (pin 6) connected to PA3 (SSI0Fss)
-// CARD_CS (pin 5) unconnected
-// Data/Command (pin 4) connected to PA6 (GPIO)
+// TFT_CS (pin 6) connected to PA3 (GPIO/SSI0Fss)
+// CARD_CS (pin 5) connected to PD7 (GPIO)
+// Data/Command (pin 4) connected to PA6 (GPIO), high for data, low for command
 // RESET (pin 3) connected to PA7 (GPIO)
 // VCC (pin 2) connected to +3.3 V
 // Gnd (pin 1) connected to ground
@@ -78,6 +82,13 @@ enum initRFlags{
 #define ST7735_MAGENTA 0xF81F
 #define ST7735_YELLOW  0x07FF
 #define ST7735_WHITE   0xFFFF
+
+//------------ST7735_InitB------------
+// Initialization for ST7735B screens.
+// Input: none
+// Output: none
+void ST7735_InitB(void);
+
 
 //------------ST7735_InitR------------
 // Initialization for ST7735R screens (green or red tabs).
@@ -195,7 +206,7 @@ void ST7735_DrawBitmap(int16_t x, int16_t y, const uint16_t *image, int16_t w, i
 //        bgColor   16-bit color of the background
 //        size      number of pixels per character pixel (e.g. size==2 prints each pixel of font as 2x2 square)
 // Output: none
-void ST7735_DrawCharS(int16_t x, int16_t y, uint8_t c, int16_t textColor, int16_t bgColor, uint8_t size);
+void ST7735_DrawCharS(int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size);
 
 //------------ST7735_DrawChar------------
 // Advanced character draw function.  This is similar to the function
@@ -210,7 +221,7 @@ void ST7735_DrawCharS(int16_t x, int16_t y, uint8_t c, int16_t textColor, int16_
 //        bgColor   16-bit color of the background
 //        size      number of pixels per character pixel (e.g. size==2 prints each pixel of font as 2x2 square)
 // Output: none
-void ST7735_DrawChar(int16_t x, int16_t y, uint8_t c, int16_t textColor, int16_t bgColor, uint8_t size);
+void ST7735_DrawChar(int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size);
 
 //------------ST7735_DrawString------------
 // String draw function.  
@@ -222,7 +233,7 @@ void ST7735_DrawChar(int16_t x, int16_t y, uint8_t c, int16_t textColor, int16_t
 //        textColor 16-bit color of the characters
 // bgColor is Black and size is 1
 // Output: number of characters printed
-uint32_t ST7735_DrawString(uint16_t x, uint16_t y, uint8_t *pt, int16_t textColor);;
+uint32_t ST7735_DrawString(uint16_t x, uint16_t y, char *pt, int16_t textColor);;
 
 
 
@@ -374,7 +385,7 @@ void ST7735_PlotNextErase(void);
 // Color set by ST7735_SetTextColor
 // Inputs: 8-bit ASCII character
 // Outputs: none
-void ST7735_OutChar(uint8_t ch);
+void ST7735_OutChar(char ch);
 
 //********ST7735_OutString*****************
 // Print a string of characters to the ST7735 LCD.
@@ -383,7 +394,7 @@ void ST7735_OutChar(uint8_t ch);
 // The string will not automatically wrap.
 // inputs: ptr  pointer to NULL-terminated ASCII string
 // outputs: none
-void ST7735_OutString(uint8_t *ptr);
+void ST7735_OutString(char *ptr);
 
 // ************** ST7735_SetTextColor ************************
 // Sets the color in which the characters will be printed 

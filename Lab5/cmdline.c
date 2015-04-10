@@ -328,7 +328,11 @@ void CommandEcho(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
 }
 
 void CommandSD(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
-    if (ui8Argc < 2) {
+    int32_t result;
+		char ch;
+		int i, x=0, y = 0, j = 0;
+	
+		if (ui8Argc < 2) {
         OutCRLF();
         UART_OutString("Insufficient arguments for command sd");
         return;    
@@ -336,10 +340,41 @@ void CommandSD(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
     
     if (strcmp(g_ppcArgv[1],"format") == 0) {
 			// Doesn't care if file in use
-			eFile_Format();
+			result = eFile_Format();
+			//ST7735_Message(0, 1, "ERROR: ", result);
     }
-    else if (strcmp(g_ppcArgv[1],"directory") == 0) {
-      eFile_Directory(&ST7735_OutChar);
+    else if (strcmp(g_ppcArgv[1],"dir") == 0) {
+      Output_Clear();
+			ls(currentDirectoryBlock);
+    }
+		else if (strcmp(g_ppcArgv[1],"touch") == 0) {
+      if (ui8Argc < 3) {
+        OutCRLF();
+        UART_OutString("Insufficient arguments for command sd touch");
+        return;    
+			}
+			
+			eFile_Create(g_ppcArgv[2]);
+    }
+		else if (strcmp(g_ppcArgv[1],"write") == 0) {
+      if (ui8Argc < 4) {
+        OutCRLF();
+        UART_OutString("Insufficient arguments for command sd write");
+        return;    
+			}
+			
+			j = 0;
+			if(eFile_WOpen(g_ppcArgv[2])) {
+				ST7735_OutString("ERROR: FILE NOT FOUND");
+				return;
+			}
+			else {
+				while(g_ppcArgv[3][j]) {
+					eFile_Write(g_ppcArgv[3][j++]);
+				}
+			}
+			eFile_WClose();
+				
     }
 		else if (strcmp("print", g_ppcArgv[1]) == 0) {
 			if (ui8Argc < 3) {
@@ -347,22 +382,49 @@ void CommandSD(uint_fast8_t ui8Argc, char *g_ppcArgv[]) {
         UART_OutString("Insufficient arguments for command sd print");
         return;    
 			}
+			
+			result = eFile_ROpen(g_ppcArgv[2]);
+			if(result) {
+				ST7735_OutString("File not found");
+				return;
+			}
+			ST7735_SetCursor(0, 0);
+			Output_Clear();
+			while(1){
+				eFile_ReadNext(&ch);
+				if (ch == '\0') break;
+				ST7735_DrawChar(x, y, ch, ST7735_Color565(255, 255, 0), 0, 1);
+				x = x + 6;
+				if(x > 122){
+					x = 0;                          // start over on the next line
+					y = y + 10;
+				}
+				if(y > 150){
+					y = 10;                         // the screen is full
+				}
+				//ST7735_OutChar(ch);
+			}
+			eFile_RClose();
     }
-		else if (strcmp(g_ppcArgv[1],"delete") == 0) {
-			if (ui8Argc < 2) {
+		else if (strcmp(g_ppcArgv[1],"rm") == 0) {
+			if (ui8Argc < 3) {
         OutCRLF();
-        UART_OutString("Insufficient arguments for command sd delete");
+        UART_OutString("Insufficient arguments for command sd rm");
         return;    
 			}
+			
+			result = eFile_Delete(g_ppcArgv[2]);
 			// Call delete file
 			// error if no file with that name
-			UART_OutString("ERROR: NO FILE NAMED "); UART_OutString(g_ppcArgv[2]);
+			if(result) {
+				UART_OutString("ERROR: NO FILE NAMED "); UART_OutString(g_ppcArgv[2]);
+			}
 			// error if any files currently open
-			UART_OutString("ERROR: FILES CURRENTLY OPEN. CLOSE ALL FILES AND TRY AGAIN");
+			//UART_OutString("ERROR: FILES CURRENTLY OPEN. CLOSE ALL FILES AND TRY AGAIN");
     }
 		else if (strcmp(g_ppcArgv[1],"help") == 0) {
 			OutCRLF();
-			UART_OutString("formatr\ndirectory\r\nprint\r\n\t1)FILENAME\r\ndelete\r\n\t1)FILENAME");
+			UART_OutString("format\r\ndirectory\r\nprint\r\n\t1)FILENAME\r\ndelete\r\n\t1)FILENAME");
 			OutCRLF();
     }
     else {
