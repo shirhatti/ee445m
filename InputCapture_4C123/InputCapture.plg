@@ -1,0 +1,30 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+E:\Dropbox\ArmBook\LaunchPad\LaunchPadware\InputCapture_4F120\InputCapture.uvproj
+Project File Date:  03/23/2014
+
+<h2>Output:</h2>
+Build target 'InputCapture'
+assembling startup.s...
+compiling InputCapture.c...
+compiling InputCaptureTestMain.c...
+linking...
+Program Size: Code=1200 RO-data=32 RW-data=8 ZI-data=1024  
+".\InputCapture.axf" - 0 Errors, 0 Warning(s).
+Build target 'InputCapture'
+assembling startup.s...
+compiling InputCapture.c...
+compiling InputCaptureTestMain.c...
+linking...
+Program Size: Code=1204 RO-data=32 RW-data=8 ZI-data=1024  
+".\InputCapture.axf" - 0 Errors, 0 Warning(s).
+Load "E:\\Dropbox\\ArmBook\\LaunchPad\\LaunchPadware\\InputCapture_4F120\\InputCapture.axf" 
+Connecting: Mode=JTAG, Speed=1000000Hz
+Erase Done.
+Programming Done.
+Verify OK.
+Clean started: Project: 'InputCapture'
+   deleting intermediate output files for target 'InputCapture'
