@@ -26,6 +26,9 @@
 #include <stdint.h>
 #include "inc/tm4c123gh6pm.h"
 #include "InputCapture.h"
+#include "can0.h"
+
+uint8_t sendArray[4];
 
 #define NVIC_EN0_INT19          0x00080000  // Interrupt 19 enable
 
@@ -34,6 +37,8 @@
                                             // 1:0 of GPTMTAMR and GPTMTBMR
 #define TIMER_TAMR_TACMR        0x00000004  // GPTM TimerA Capture Mode
 #define TIMER_TAMR_TAMR_CAP     0x00000003  // Capture mode
+#define TIMER_TAMR_TASNAPS			0x00000080	// Snapshot at time of Capture Event
+#define TIMER_TAMR_TACDIR				0x00000010	// Count Up
 #define TIMER_CTL_TAEN          0x00000001  // GPTM TimerA Enable
 #define TIMER_CTL_TAEVENT_POS   0x00000000  // Positive edge
 #define TIMER_IMR_CAEIM         0x00000004  // GPTM CaptureA Event Interrupt
@@ -59,6 +64,10 @@ void EndCritical(long sr);    // restore I bit to previous value
 void WaitForInterrupt(void);  // low power mode
 void (*PeriodicTask)(void);   // user function
 
+uint32_t Flag, Per;
+uint32_t Period;              // (1/clock) units
+uint32_t First;               // Timer0A first edge
+int32_t Done;                // set each rising
 //------------TimerCapture_Init------------
 // Initialize Timer0A in edge time mode to request interrupts on
 // the rising edge of PB0 (CCP0).  The interrupt service routine
@@ -67,6 +76,8 @@ void (*PeriodicTask)(void);   // user function
 // Output: none
 void TimerCapture_Init(void(*task)(void)){long sr;
   sr = StartCritical();
+	Flag = 0;
+	
   SYSCTL_RCGCTIMER_R |= 0x01;// activate timer0
   SYSCTL_RCGCGPIO_R |= 0x02; // activate port B
   while((SYSCTL_PRGPIO_R&0x0002) == 0){};// ready?
@@ -83,8 +94,10 @@ void TimerCapture_Init(void(*task)(void)){long sr;
                                    // configure for capture mode, default down-count settings
   TIMER0_TAMR_R = (TIMER_TAMR_TACMR|TIMER_TAMR_TAMR_CAP);
                                    // configure for falling edge event
-  TIMER0_CTL_R &= ~(TIMER_CTL_TAEVENT_NEG|0xC);
-  TIMER0_TAILR_R = TIMER_TAILR_M;  // max start value
+  TIMER0_CTL_R &= 0;
+	TIMER0_CTL_R |= (TIMER_CTL_TAEVENT_BOTH);
+  TIMER0_TAILR_R = 0x0000FFFF;  // max start value
+	TIMER0_TAPR_R = 0xFF;							 // 23Prescale to max of 19.66 ms (echo 750 us + max 18.5 ms) 
   TIMER0_IMR_R |= TIMER_IMR_CAEIM; // enable capture match interrupt
   TIMER0_ICR_R = TIMER_ICR_CAECINT;// clear timer0A capture match flag
   TIMER0_CTL_R |= TIMER_CTL_TAEN;  // enable timer0A 16-b, +edge timing, interrupts
@@ -96,7 +109,24 @@ void TimerCapture_Init(void(*task)(void)){long sr;
 
 void Timer0A_Handler(void){
   TIMER0_ICR_R = TIMER_ICR_CAECINT;// acknowledge timer0A capture match
-  (*PeriodicTask)();               // execute user task
+  Period = (First - TIMER0_TAR_R)&0xFFFFFF;// 24 bits, 12.5ns resolution
+  First = TIMER0_TAR_R;            // setup for next
+  Done = 1;
+	
+	if(Flag == 0) 
+	{
+		Flag = 1;
+	}
+	else
+	{
+		Per = Period;
+		sendArray[0] = (Per&0xFF000000)>>24;
+		sendArray[1] = (Per&0x00FF0000)>>16;
+		sendArray[2] = (Per&0x0000FF00)>>8;
+		sendArray[3] = (Per&0x000000FF);
+		CAN0_SendData(sendArray);
+		Flag = 0;
+	}
 }
 
 void Init_Timer4A(void) {

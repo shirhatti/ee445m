@@ -27,6 +27,7 @@
 #include "inc/tm4c123gh6pm.h"
 #include "InputCapture.h"
 #include "PLL.h"
+#include "can0.h"
 
 #define PB6  (*((volatile unsigned long *)0x40005100))
 	
@@ -37,6 +38,10 @@ void EndCritical(long sr);    // restore I bit to previous value
 void WaitForInterrupt(void);  // low power mode
 
 volatile uint32_t Count;      // incremented on interrupt
+uint32_t pingTime;
+uint32_t TimeDiff, FirstTime;
+uint32_t jitter;
+
 void UserTask(void){
   GPIO_PORTF_DATA_R = GPIO_PORTF_DATA_R^0x04; // toggle PF2
   Count = Count + 1;
@@ -73,21 +78,28 @@ void Init_Timer2A(uint32_t period) {
 }
 
 void Timer2A_Handler(void){ 
+	unsigned long sr;
+	
 	TIMER2_ICR_R = TIMER_ICR_TATOCINT;// acknowledge timer2A timeout
 	
 	if(counter == 100)
 	{
 		counter = 1;
 		
+		sr = StartCritical();
 		GPIO_PORTB_AFSEL_R &= ~0x40; // regular port function
 		GPIO_PORTB_DIR_R |= 0x40;    // make PD3-0 out
+		GPIO_PORTB_PCTL_R = (GPIO_PORTB_PCTL_R&0xF0FFFFFF)+0x00000000;
 		PB6 = 0x00;
 		PB6 = 0x40;
 		Timer4A_Wait(800);	// 10 us
-		PB6 = 0x40;
-		TIMER0_TAV_R = 0;
+		PB6 = 0x00;
+		
 		GPIO_PORTB_DIR_R &= ~0x40;       // make PB6 in
 		GPIO_PORTB_AFSEL_R |= 0x40;      // enable alt funct on PB6
+		GPIO_PORTB_PCTL_R = (GPIO_PORTB_PCTL_R&0xF0FFFFFF)+0x07000000;
+		
+		EndCritical(sr);
 	}
 	else {
 		counter++;
@@ -96,6 +108,7 @@ void Timer2A_Handler(void){
 
 int main(void){
 	PLL_Init();
+	CAN0_Open();
                                    // activate port F
   SYSCTL_RCGCGPIO_R |= 0x20;
   while((SYSCTL_PRGPIO_R&0x0020) == 0){};// ready?
